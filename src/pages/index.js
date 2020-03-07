@@ -20,9 +20,16 @@ export const GameContext = React.createContext({
 })
 
 export const RANGE = [1,2,3,4,5,6];
-const numSquares = RANGE.length * RANGE.length;
-const numBlockers = 7;
-const odds = (sqr, blr) => { return Math.ceil(Math.random() * sqr) <= blr }; 
+const DICE = [
+  [11,31,41,42,52,63],
+  [12,13,21,22,23,32],
+  [14,25,35,36,46,66],
+  [24,33,34,43,44,53],
+  [45,54,55,56,64,65],
+  [15,15,26,51,62,62],
+  [16,16,16,61,61,61]
+]
+const diceIndex = () => { return Math.floor(Math.random() * 6) }; // 0 to 5
 
 const spaceReducer = (state, action) => {
   switch (action.type) {
@@ -69,21 +76,16 @@ const IndexPage = () => {
   const resetBoard = () => {
     setSpaces({ type: "CLEAR" });
     setPieces({ type: "RESET" });
-    let blockersRemaining = numBlockers;
-    let squaresRemaining = numSquares;
+    const blockers = DICE.reduce((arr, d) => {
+      arr.push(d[diceIndex()]);
+      return arr;
+    }, []);
+    console.log("blockers", blockers);
     RANGE.forEach(i => {
         RANGE.forEach(j => {
-            const block = 
-                blockersRemaining > 0 && 
-                (odds(squaresRemaining, blockersRemaining) || 
-                    squaresRemaining === blockersRemaining);
-            if (block) {
-                blockersRemaining--;
-                setSpaces({ item: { [`${i}${j}`] : "BLOCK"} })
-            } else {
-              setSpaces({ item: { [`${i}${j}`] : "FREE"} })
-            }
-            squaresRemaining--;
+            const thisSpace = Number.parseInt(`${i}${j}`);
+            const status = blockers.includes(thisSpace) ? "BLOCK" : "FREE";
+            setSpaces({ item: { [thisSpace] : status} })
         })
     })
     setTimer(new Date());
