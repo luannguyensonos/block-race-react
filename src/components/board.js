@@ -169,13 +169,16 @@ const StyledBoard = styled(Board)`
             background: ${pieceColors.box};
         }
 
-        &.false {
-            background: #B80D0D;
+        &.ispreview {
+            opacity: .75;
+            border-radius: 25%;
+            box-shadow: 0px 0px 0.1rem 0.1rem #AAA;
         }
 
-        &.ispreview {
-            opacity: .7;
-            border-radius: 25%;
+        &.false {
+            background: #B80D0D;
+            box-shadow: 0px 0px 0.1rem 0.1rem red;
+            cursor: not-allowed;
         }
     }
 `
