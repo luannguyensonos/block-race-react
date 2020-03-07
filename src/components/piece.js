@@ -59,7 +59,7 @@ export const pieceColors = {
     "one": "#4464F1",
     "corner": "#A244F1",
     "l": "#45C8EE",
-    "nub": "#F0F70D",
+    "nub": "gold",
     "zig": "#EC332E",
     "box": "#38E235"
 }

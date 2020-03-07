@@ -21,9 +21,9 @@ const Tray = ({ className }) => {
 const StyledTray = styled(Tray)`
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    height: calc(100vw - 2rem);
-    max-height: 500px;
-    margin-top: 1rem;
+    padding: 0.5rem 2.75rem;
+    height: calc(100vw - 8rem);
+    max-height: 375px;
 `
 
 export default StyledTray

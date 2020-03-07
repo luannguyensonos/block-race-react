@@ -116,12 +116,13 @@ const StyledBoard = styled(Board)`
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     background: black;
+    padding: 0.5rem;
 
     & > div {
         background: #000;
         border: 1px solid #333;
-        height: calc((100vw - 2rem) / 6);
-        max-height: 84px;
+        height: calc((100vw - 4rem) / 6);
+        max-height: 78px;
         border-radius: 10%;
 
         &.BLOCK {

@@ -20,22 +20,21 @@ const Header = () => {
   return (
     <header
       style={{
-        background: `${doneTime != null ? "green" : "#333"}`,
-        marginBottom: `1.5rem`,
+        background: `${timer != null && doneTime != null ? "green" : "#333"}`,
       }}
     >
       <div
         style={{
           margin: `0 auto`,
-          maxWidth: 960,
-          padding: `1rem`,
+          maxWidth: 540,
+          padding: `0.5rem`,
           display: `flex`
         }}
       >
         <h1 
           style={{ 
             margin: `auto 0`,
-            fontSize: `1.5rem` 
+            fontSize: `1rem`
           }}
         >
           <Link
@@ -52,8 +51,7 @@ const Header = () => {
           type="button"
           style={{
             margin: `0 0 0 auto`,
-            maxWidth: 960,
-            padding: `0.5rem 1rem`,
+            padding: `0.25rem 1rem`,
             background: `orange`,
             color: `#FFF`
           }}
