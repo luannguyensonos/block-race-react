@@ -1,35 +1,70 @@
 import { Link } from "gatsby"
 import PropTypes from "prop-types"
-import React from "react"
+import React, {useContext} from "react"
+import { GameContext } from "../pages/index"
 
-const Header = ({ siteTitle }) => (
-  <header
-    style={{
-      background: `rebeccapurple`,
-      marginBottom: `1.45rem`,
-    }}
-  >
-    <div
+const Header = () => {
+  const {resetBoard, timer, doneTime} = useContext(GameContext);
+
+  const formatTime = (start) => {
+    const curr = doneTime != null ? doneTime : new Date();
+    const seconds = Math.floor((curr.getTime() - start.getTime()) / 1000);
+  
+    if (seconds >= 60) {
+      return `${Math.floor(seconds/60)}m ${seconds%60}s`
+    } else {
+      return `${seconds}s`
+    }
+  }
+
+  return (
+    <header
       style={{
-        margin: `0 auto`,
-        maxWidth: 960,
-        padding: `1.45rem 1.0875rem`,
+        background: `${doneTime != null ? "green" : "#333"}`,
+        marginBottom: `1.5rem`,
       }}
     >
-      <h1 style={{ margin: 0 }}>
-        <Link
-          to="/"
-          style={{
-            color: `white`,
-            textDecoration: `none`,
+      <div
+        style={{
+          margin: `0 auto`,
+          maxWidth: 960,
+          padding: `1rem`,
+          display: `flex`
+        }}
+      >
+        <h1 
+          style={{ 
+            margin: `auto 0`,
+            fontSize: `1.5rem` 
           }}
         >
-          {siteTitle}
-        </Link>
-      </h1>
-    </div>
-  </header>
-)
+          <Link
+            to="/"
+            style={{
+              color: `white`,
+              textDecoration: `none`,
+            }}
+          >
+            {`${timer == null ? "Block Race" : formatTime(timer)}`}
+          </Link>
+        </h1>
+        <button 
+          type="button"
+          style={{
+            margin: `0 0 0 auto`,
+            maxWidth: 960,
+            padding: `0.5rem 1rem`,
+            background: `orange`,
+            color: `#FFF`
+          }}
+          onClick={resetBoard}
+        >
+          {`${timer == null ? "New" : "Reset"}`}
+        </button>
+      </div>
+    </header>
+  )
+}
 
 Header.propTypes = {
   siteTitle: PropTypes.string,
