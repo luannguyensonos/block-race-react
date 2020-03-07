@@ -69,7 +69,7 @@ const Board = ({ className }) => {
             const newAP = Object.keys(pieces).find(pk => pk !== activePiece && !pieces[pk].placed);
             setActivePiece(newAP);
             setPreview({});
-        } else if (spaces[spaceNum] !== "FREE" && spaces[spaceNum] !== "BLOCK") {
+        } else if (spaces[spaceNum] && spaces[spaceNum] !== "FREE" && spaces[spaceNum] !== "BLOCK") {
             // Lift the piece
             const newAP = spaces[spaceNum];
             setActivePiece(newAP);
