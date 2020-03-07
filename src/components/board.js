@@ -97,7 +97,7 @@ const Board = ({ className }) => {
                             className={
                                 className + 
                                 ` ${spaces[`${i}${j}`]}` + 
-                                ` ${isPreview ? `${preview.color}` : ""}`
+                                ` ${isPreview ? `${preview.color} ispreview` : ""}`
                             }
                             onMouseEnter={() => {calculatePreview(spaceNum)}}
                             onMouseLeave={() => {setPreview({})}}
@@ -171,6 +171,11 @@ const StyledBoard = styled(Board)`
 
         &.false {
             background: #B80D0D;
+        }
+
+        &.ispreview {
+            opacity: .7;
+            border-radius: 25%;
         }
     }
 `
