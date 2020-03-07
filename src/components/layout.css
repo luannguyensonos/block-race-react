@@ -619,4 +619,9 @@ pre tt:after {
   html {
     font-size: 100%;
   }
+  body {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+  }
 }

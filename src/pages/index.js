@@ -61,7 +61,7 @@ const IndexPage = () => {
 
   const [spaces, setSpaces] = useReducer(spaceReducer, {});
   const [pieces, setPieces] = useReducer(pieceReducer, initialPieceStates);
-  const [activePiece, setActivePiece] = useState("four");
+  const [activePiece, setActivePiece] = useState(Object.keys(initialPieceStates)[0]);
   const [preview, setPreview] = useState({});
   const [timer, setTimer] = useState(null);
   const [doneTime, setDone] = useState(null);
@@ -88,6 +88,7 @@ const IndexPage = () => {
     })
     setTimer(new Date());
     setDone(null);
+    setActivePiece(Object.keys(initialPieceStates)[0]);
   }
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, {useContext} from "react"
+import React, {useContext, useState} from "react"
 import styled from "styled-components"
 import { GameContext, RANGE } from "../pages/index"
 import { pieceColors } from "../components/piece"
@@ -42,6 +42,8 @@ const Board = ({ className }) => {
         preview, setPreview, 
     } = useContext(GameContext);
 
+    const [justLaid, setJustLaid] = useState(null);
+
     const calculatePreview = (spaceNum) => {
         if (!activePiece || !pieces[activePiece]) return;
 
@@ -54,8 +56,12 @@ const Board = ({ className }) => {
         });
     }
 
-    const layPiece = (spaceNum) => {
+    const layPiece = (spaceNum = null) => {
         if (preview.color) {
+            setJustLaid(activePiece);
+            setTimeout(() => {
+                setJustLaid(null);
+            }, 200);
             const oldAP = { [activePiece] : {...pieces[activePiece]} };
             oldAP[activePiece].placed = true;
             setPieces({ item: oldAP });
@@ -69,16 +75,48 @@ const Board = ({ className }) => {
             const newAP = Object.keys(pieces).find(pk => pk !== activePiece && !pieces[pk].placed);
             setActivePiece(newAP);
             setPreview({});
-        } else if (spaces[spaceNum] && spaces[spaceNum] !== "FREE" && spaces[spaceNum] !== "BLOCK") {
+        } else if (
+            spaceNum &&
+            spaces[spaceNum] &&
+            spaces[spaceNum] !== "FREE" &&
+            spaces[spaceNum] !== "BLOCK")
+        {
             // Lift the piece
-            const newAP = spaces[spaceNum];
-            setActivePiece(newAP);
+            const pieceToLift = spaces[spaceNum];
+            if (pieceToLift !== justLaid) {
+                setActivePiece(pieceToLift);
 
-            const newPiece = { [newAP] : {...pieces[newAP]} };
-            newPiece[newAP].placed = false;
-            setPieces({ item: newPiece });
+                const newPiece = { [pieceToLift] : {...pieces[pieceToLift]} };
+                newPiece[pieceToLift].placed = false;
+                setPieces({ item: newPiece });
 
-            setSpaces({ type: "LIFT", item: newAP });
+                setSpaces({ type: "LIFT", item: pieceToLift });
+                setPreview({});
+            } else {
+                setPreview({});
+            }
+        }
+    }
+
+    const handleTouchStart = (e) => {
+        const target = e.touches && e.touches.length > 0 ? e.touches[0].target : null;
+        if (target) calculatePreview(Number.parseInt(target.id));
+    }
+    const handleTouchMove = (e) => {
+        const touch = e.touches && e.touches.length > 0 ? e.touches[0] : null;
+        if (touch) {
+            const corner = document.getElementById("11");
+            const clientRect = corner.getBoundingClientRect();
+            const myI = Math.ceil((touch.clientY - clientRect.top) / clientRect.height);
+            const myJ = Math.ceil((touch.clientX - clientRect.left) / clientRect.width);
+            const predictedSpaceNum = `${myI}${myJ}`;
+            if (spaces[predictedSpaceNum]) calculatePreview(Number.parseInt(predictedSpaceNum));
+        }
+    }
+    const handleTouchEnd = (e) => {
+        if (preview.color) {
+            layPiece();
+        } else {
             setPreview({});
         }
     }
@@ -102,6 +140,9 @@ const Board = ({ className }) => {
                             onMouseEnter={() => {calculatePreview(spaceNum)}}
                             onMouseLeave={() => {setPreview({})}}
                             onClick={() => {layPiece(spaceNum)}}
+                            onTouchStart={(e) => {handleTouchStart(e)}}
+                            onTouchMove={(e) => {handleTouchMove(e)}}
+                            onTouchEnd={(e) => {handleTouchEnd(e)}}
                         >
                         </div>
                     );
@@ -177,7 +218,7 @@ const StyledBoard = styled(Board)`
         }
 
         &.false {
-            background: #B80D0D;
+            background: #520101;
             box-shadow: 0px 0px 0.1rem 0.1rem red;
             cursor: not-allowed;
         }
