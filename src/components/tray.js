@@ -24,6 +24,7 @@ const StyledTray = styled(Tray)`
     padding: 0.5rem 2.75rem;
     height: calc(100vw - 8rem);
     max-height: 375px;
+    touch-action: none;
 `
 
 export default StyledTray

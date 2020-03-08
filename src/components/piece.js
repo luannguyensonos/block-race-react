@@ -104,6 +104,7 @@ const Piece = ({ name, className }) => {
 const StyledPiece = styled(Piece)`
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    touch-action: none;
 
     &.active {
         border: 2px solid red;
