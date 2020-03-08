@@ -4,7 +4,7 @@ import React, {useContext, useState, useEffect} from "react"
 import { GameContext } from "../pages/index"
 
 const Header = ({qs}) => {
-  const {puzzle} = qs;
+  const {puzzle} = qs ? qs : {puzzle:null};
   const {resetBoard, timer, doneTime, puzzleId} = useContext(GameContext);
 
   const [title, setTitle] = useState("");
