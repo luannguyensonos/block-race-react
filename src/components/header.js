@@ -3,8 +3,9 @@ import PropTypes from "prop-types"
 import React, {useContext, useState, useEffect} from "react"
 import { GameContext } from "../pages/index"
 
-const Header = () => {
-  const {resetBoard, timer, doneTime} = useContext(GameContext);
+const Header = ({qs}) => {
+  const {puzzle} = qs;
+  const {resetBoard, timer, doneTime, puzzleId} = useContext(GameContext);
 
   const [title, setTitle] = useState("");
   const [best, setBest] = useState(99999);
@@ -84,11 +85,50 @@ const Header = () => {
             background: `orange`,
             color: `#FFF`
           }}
-          onClick={() => {resetBoard()}}
+          onClick={() => {resetBoard(timer == null && puzzle ? puzzle : null)}}
         >
-          {`${timer == null ? "New" : "Reset"}`}
+          {`${timer == null ? puzzle ? "Load Puzzle" : "Start New" : "Reset"}`}
         </button>
       </div>
+      {doneTime && puzzleId ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.5rem`,
+              display: `flex`,
+              flexDirection: `column`
+            }}
+          >
+            <h1
+              style={{
+                margin: `auto 0`,
+                fontSize: `0.75rem`
+              }}
+            >
+              Challenge a friend:
+            </h1>
+            <h1
+              style={{
+                margin: `auto 0`,
+                fontSize: `0.75rem`
+              }}
+            >
+              <Link
+                to={`/?puzzle=${puzzleId}`}
+                style={{
+                  color: `white`,
+                  textDecoration: `none`,
+                }}
+              >
+                {`https://block-race.netlify.com/?puzzle=${puzzleId}`}
+              </Link>
+            </h1>
+          </div>
+        )
+        : null
+      }
     </header>
   )
 }

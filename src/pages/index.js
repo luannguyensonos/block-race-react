@@ -4,6 +4,8 @@ import SEO from "../components/seo"
 import Board from "../components/board"
 import Tray from "../components/tray"
 import { initialPieceStates } from "../components/piece"
+import { Location } from '@reach/router'
+import queryString from 'query-string'
 
 export const GameContext = React.createContext({
   resetBoard: () => {},
@@ -16,7 +18,8 @@ export const GameContext = React.createContext({
   activePiece: "",
   preview: {},
   timer: null,
-  doneTime: null
+  doneTime: null,
+  puzzleId: ""
 })
 
 export const RANGE = [1,2,3,4,5,6];
@@ -85,6 +88,7 @@ const IndexPage = () => {
   const [preview, setPreview] = useState({});
   const [timer, setTimer] = useState(null);
   const [doneTime, setDone] = useState(null);
+  const [puzzleId, setPuzzleId] = useState("");
   
   const resetBoard = (preset = null) => {
     setSpaces({ type: "CLEAR" });
@@ -95,7 +99,8 @@ const IndexPage = () => {
         arr.push(d[diceIndex()]);
         return arr;
       }, []);
-    console.log("blockers", blockers, serializedBlockers(blockers));
+    setPuzzleId(serializedBlockers(blockers));
+    console.log("blockers", blockers, puzzleId);
     RANGE.forEach(i => {
         RANGE.forEach(j => {
             const thisSpace = Number.parseInt(`${i}${j}`);
@@ -116,25 +121,32 @@ const IndexPage = () => {
   }, [spaces])
 
   return (
-    <GameContext.Provider value={{
-        setSpaces,
-        resetBoard,
-        spaces,
-        pieces,
-        setPieces,
-        activePiece,
-        setActivePiece,
-        preview,
-        setPreview,
-        timer,
-        doneTime
-    }}>
-      <Layout>
-        <SEO title="Block Race" />
-        <Board/>
-        <Tray/>
-      </Layout>
-    </GameContext.Provider>
+    <Location>
+      {({ location }) => (
+        <GameContext.Provider value={{
+            setSpaces,
+            resetBoard,
+            spaces,
+            pieces,
+            setPieces,
+            activePiece,
+            setActivePiece,
+            preview,
+            setPreview,
+            timer,
+            doneTime,
+            puzzleId
+        }}>
+          <Layout
+            qs={location.search ? queryString.parse(location.search) : {}}
+          >
+            <SEO title="Block Race" />
+            <Board/>
+            <Tray/>
+          </Layout>
+        </GameContext.Provider>
+      )}
+    </Location>
   )
 }
 
