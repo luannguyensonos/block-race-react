@@ -61,7 +61,7 @@ const Board = ({ className }) => {
             setJustLaid(activePiece);
             setTimeout(() => {
                 setJustLaid(null);
-            }, 200);
+            }, 800);
             const oldAP = { [activePiece] : {...pieces[activePiece]} };
             oldAP[activePiece].placed = true;
             setPieces({ item: oldAP });
@@ -215,11 +215,15 @@ const StyledBoard = styled(Board)`
             opacity: .75;
             border-radius: 25%;
             box-shadow: 0px 0px 0.1rem 0.1rem #AAA;
+
+            &.BLOCK {
+                border-radius: 50%;
+            }
         }
 
         &.false {
             background: #520101;
-            box-shadow: 0px 0px 0.1rem 0.1rem red;
+            box-shadow: 0px 0px 0.2rem 0.2rem red;
             cursor: not-allowed;
         }
     }
