@@ -84,7 +84,7 @@ const Header = () => {
             background: `orange`,
             color: `#FFF`
           }}
-          onClick={resetBoard}
+          onClick={() => {resetBoard()}}
         >
           {`${timer == null ? "New" : "Reset"}`}
         </button>

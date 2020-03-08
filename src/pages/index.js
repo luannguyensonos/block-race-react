@@ -64,6 +64,19 @@ const pieceReducer = (state, action) => {
   }
 }
 
+const serializedBlockers = (bArr) => {
+  return bArr.sort().reduce((str, b) => {
+    return str + b;
+  }, "")
+}
+
+const loadBlockersFromString = (preset) => {
+  return [0,2,4,6,8,10,12].reduce((arr, i) => {
+    arr.push(Number.parseInt(preset.substr(i,2)));
+    return arr;
+  }, [])
+}
+
 const IndexPage = () => {
 
   const [spaces, setSpaces] = useReducer(spaceReducer, {});
@@ -73,14 +86,16 @@ const IndexPage = () => {
   const [timer, setTimer] = useState(null);
   const [doneTime, setDone] = useState(null);
   
-  const resetBoard = () => {
+  const resetBoard = (preset = null) => {
     setSpaces({ type: "CLEAR" });
     setPieces({ type: "RESET" });
-    const blockers = DICE.reduce((arr, d) => {
-      arr.push(d[diceIndex()]);
-      return arr;
-    }, []);
-    console.log("blockers", blockers);
+    const blockers = preset != null && preset.length === 14 ?
+      loadBlockersFromString(preset) :
+      DICE.reduce((arr, d) => {
+        arr.push(d[diceIndex()]);
+        return arr;
+      }, []);
+    console.log("blockers", blockers, serializedBlockers(blockers));
     RANGE.forEach(i => {
         RANGE.forEach(j => {
             const thisSpace = Number.parseInt(`${i}${j}`);
