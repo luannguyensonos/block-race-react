@@ -30,7 +30,6 @@ const Header = () => {
   const [retrievedRecord, retrieveRecord] = useAsyncFn(async (pid) => {
     const thisRecord = await fetch(`/.netlify/functions/getRecord?id=${pid}`)
       .then(res => res.json())
-    console.log("Got this record:", thisRecord.data)
     setRecord(1);
     if (!thisRecord.data) {
       return {
@@ -87,7 +86,7 @@ const Header = () => {
   return (
     <header
       style={{
-        background: `${timer != null && doneTime != null ? "green" : "#333"}`,
+        background: `${timer != null && doneTime != null ? "#006600" : "#111"}`,
         color: `white`
       }}
     >
@@ -121,7 +120,7 @@ const Header = () => {
             style={{
               margin: `0 0 0 auto`,
               padding: `0.25rem 1rem`,
-              background: `orange`,
+              background: `#DF950C`,
               color: `#FFF`
             }}
             onClick={() => {
@@ -233,7 +232,7 @@ const Header = () => {
                         style={{
                           margin: `0 auto 0 1rem`,
                           padding: `0.25rem 1rem`,
-                          background: `orange`,
+                          background: `#DF950C`,
                           color: `#FFF`
                         }}
                         onClick={() => {

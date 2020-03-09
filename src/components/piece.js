@@ -111,7 +111,7 @@ const StyledPiece = styled(Piece)`
     }
 
     & > div {
-        border: 0.5px solid #EEE;
+        border: 0.5px solid #303030;
     }
 
     &.ori1 {
@@ -254,7 +254,7 @@ const StyledPiece = styled(Piece)`
         .four22,
         .four23,
         .four24 {
-            background: #eee;
+            background: #232323;
         }
     }
 

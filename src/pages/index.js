@@ -5,7 +5,7 @@ import SEO from "../components/seo"
 import { useAsyncFn } from 'react-use'
 import { formatSeconds } from "../components/header"
 
-const odds = n => { return Math.random() * n <= 1 };
+const odds = (n,x) => { return Math.random() * n <= n/(10+2*x) };
 
 const IndexPage = () => {
 
@@ -14,15 +14,19 @@ const IndexPage = () => {
   const [allRecords, retrieveRecords] = useAsyncFn(async () => {
     const thisRecord = await fetch(`/.netlify/functions/getAllRecords`)
       .then(res => res.json())
-    console.log("Got all records:", thisRecord)
     let recordsLeft = thisRecord.length;
+    const usedNames = {};
     const reduce = thisRecord.reduce((obj, r) => {
       if ((obj.rArr.length < 10 &&
-        odds(thisRecord.length)) ||
-        recordsLeft-- <= 10-obj.rArr.length)
+        ( !usedNames[r.data.name] ||
+        odds(thisRecord.length, usedNames[r.data.name]))) ||
+        recordsLeft <= 10-obj.rArr.length)
       {
+        usedNames[r.data.name] = usedNames[r.data.name] ?
+          usedNames[r.data.name]+1 : 1;
         obj.rArr.push(r.data);
       }
+      recordsLeft--;
       if (!obj.hist[r.data.name]) obj.hist[r.data.name] = 0
       obj.hist[r.data.name]++;
       return obj;
@@ -79,7 +83,7 @@ const IndexPage = () => {
               style={{
                 margin: `auto auto`,
                 padding: `0.25rem 1rem`,
-                background: `orange`,
+                background: `#DF950C`,
                 color: `#FFF`
               }}
             >
@@ -103,10 +107,10 @@ const IndexPage = () => {
                     <li
                       style={{
                         display: `grid`,
-                        gridTemplateColumns: `1fr 2fr`,
+                        gridTemplateColumns: `1fr 3fr`,
                       }}
                     >
-                      <span>{r[0]}</span>
+                      <span style={{ fontWeight: `bold` }}>{r[0]}</span>
                       <span>{`${r[1]} records`}</span>
                     </li>
                   ))}
@@ -135,7 +139,7 @@ const IndexPage = () => {
                       <Link to={`/puzzle/?id=${r.puzzleId}`}>
                         {r.puzzleId}
                       </Link>
-                      <span>{r.name}</span>
+                      <span style={{ fontWeight: `bold` }}>{r.name}</span>
                       <span>{formatSeconds(r.best)}</span>
                     </li>
                   ))}

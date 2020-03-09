@@ -168,7 +168,7 @@ const StyledBoard = styled(Board)`
         border-radius: 10%;
 
         &.BLOCK {
-            background: #FDEBD0;
+            background: #ffdd99;
             border-radius: 50%;
         }
 
