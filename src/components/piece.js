@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components"
-import { GameContext } from "../pages/index"
+import { GameContext } from "../pages/puzzle"
 
 const range = [1,2,3,4];
 

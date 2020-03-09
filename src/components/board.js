@@ -1,6 +1,6 @@
 import React, {useContext, useState} from "react"
 import styled from "styled-components"
-import { GameContext, RANGE } from "../pages/index"
+import { GameContext, RANGE } from "../pages/puzzle"
 import { pieceColors } from "../components/piece"
 
 const moves = {
@@ -39,7 +39,8 @@ const Board = ({ className }) => {
         spaces, setSpaces, 
         pieces, setPieces, 
         activePiece, setActivePiece,
-        preview, setPreview, 
+        preview, setPreview,
+        doneTime
     } = useContext(GameContext);
 
     const [justLaid, setJustLaid] = useState(null);
@@ -139,7 +140,7 @@ const Board = ({ className }) => {
                             }
                             onMouseEnter={() => {calculatePreview(spaceNum)}}
                             onMouseLeave={() => {setPreview({})}}
-                            onClick={() => {layPiece(spaceNum)}}
+                            onClick={() => {if (!doneTime) layPiece(spaceNum)}}
                             onTouchStart={(e) => {handleTouchStart(e)}}
                             onTouchMove={(e) => {handleTouchMove(e)}}
                             onTouchEnd={(e) => {handleTouchEnd(e)}}

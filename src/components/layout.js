@@ -11,11 +11,11 @@ import PropTypes from "prop-types"
 import Header from "./header"
 import "./layout.css"
 
-const Layout = ({ qs, children }) => {
+const Layout = ({ children }) => {
 
   return (
     <>
-      <Header qs={qs}/>
+      <Header/>
       <div
         style={{
           margin: `0 auto`,

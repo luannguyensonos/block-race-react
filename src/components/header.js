@@ -1,42 +1,88 @@
 import { Link } from "gatsby"
 import PropTypes from "prop-types"
 import React, {useContext, useState, useEffect} from "react"
-import { GameContext } from "../pages/index"
+import { useAsyncFn } from 'react-use'
+import { GameContext } from "../pages/puzzle"
 
-const Header = ({qs}) => {
-  const {puzzle} = qs ? qs : {puzzle:null};
-  const {resetBoard, timer, doneTime, puzzleId} = useContext(GameContext);
+export const formatSeconds = (secs) => {
+  if (secs >= 60) {
+    return `${Math.floor(secs/60)}m ${secs%60}s`
+  } else {
+    return `${secs}s`
+  }
+}
+
+const Header = () => {
+  const {
+    resetBoard,
+    startGame,
+    timer,
+    doneTime,
+    puzzleId,
+    record,
+    setRecord
+  } = useContext(GameContext);
 
   const [title, setTitle] = useState("");
-  const [best, setBest] = useState(99999);
+  const [doneSeconds, setDoneSeconds] = useState(0);
+  const [initials, setInitials] = useState("");
+
+  const [retrievedRecord, retrieveRecord] = useAsyncFn(async (pid) => {
+    const thisRecord = await fetch(`/.netlify/functions/getRecord?id=${pid}`)
+      .then(res => res.json())
+    console.log("Got this record:", thisRecord.data)
+    setRecord(1);
+    if (!thisRecord.data) {
+      return {
+        puzzleId,
+        best: 0,
+        name: "AAA"
+      }
+    }
+    return thisRecord.data
+  }, [record])
+
+  const [submittedRecord, submitNewRecord] = useAsyncFn(async () => {
+    const thisRecord = await fetch(`/.netlify/functions/submitRecord`, {
+      method: "POST",
+      body: JSON.stringify({
+        puzzleId,
+        name: initials.toUpperCase(),
+        best: doneSeconds,
+        previous: retrievedRecord.value.best
+      })
+    })
+      .then(res => res.json())
+    setInitials("");
+    setRecord(2);
+    return thisRecord
+  }, [puzzleId, initials, doneSeconds, retrievedRecord])
 
   const formatTime = (start) => {
-    const curr = doneTime != null ? doneTime : new Date();
+    const curr = doneTime ? doneTime : new Date();
     const seconds = Math.floor((curr.getTime() - start.getTime()) / 1000);
 
-    if (doneTime != null) {
-      if (seconds < best) setBest(seconds);
+    if (doneTime) {
+      setDoneSeconds(seconds);
     }
 
     return formatSeconds(seconds);
   }
 
-  const formatSeconds = (secs) => {
-    if (secs >= 60) {
-      return `${Math.floor(secs/60)}m ${secs%60}s`
-    } else {
-      return `${secs}s`
-    }
-  }
-
   useEffect(() => {
     if (timer != null) {
       setTimeout(() => {
-        const prefix = doneTime != null ? "Completed in " : "";
+        const prefix = doneTime ? "Completed in " : "";
         setTitle(prefix+formatTime(timer));
       }, 1000)
     }
-  }, [timer, doneTime, title]);
+
+    if (doneTime && doneSeconds) {
+      if (record < 1 && !(retrievedRecord.loading || retrievedRecord.error)) {
+        retrieveRecord(puzzleId);
+      }
+    }
+  }, [timer, doneTime, title, record]);
 
   return (
     <header
@@ -69,61 +115,143 @@ const Header = ({qs}) => {
             {`${timer == null ? "Block Race" : title}`}
           </Link>
         </h1>
-        <h1
-          style={{
-            margin: `auto auto`,
-            fontSize: `0.75rem`
-          }}
-        >
-          {best < 99999 ? `Best: ${formatSeconds(best)}` : ""}
-        </h1>
-        <button 
-          type="button"
-          style={{
-            margin: `0 0 0 auto`,
-            padding: `0.25rem 1rem`,
-            background: `orange`,
-            color: `#FFF`
-          }}
-          onClick={() => {resetBoard(timer == null && puzzle ? puzzle : null)}}
-        >
-          {`${timer == null ? puzzle ? "Load Puzzle" : "Start New" : "Reset"}`}
-        </button>
+        {puzzleId ? (
+          <button
+            type="button"
+            style={{
+              margin: `0 0 0 auto`,
+              padding: `0.25rem 1rem`,
+              background: `orange`,
+              color: `#FFF`
+            }}
+            onClick={() => {
+              timer == null ?
+                startGame() :
+                resetBoard()
+            }}
+          >
+            {`${timer == null ? "Start" : "Reset"}`}
+          </button>
+        ) : null}
       </div>
-      {doneTime && puzzleId ?
+      {(!timer || doneTime) && puzzleId ?
         (
           <div
             style={{
               margin: `0 auto`,
               maxWidth: 540,
-              padding: `0.5rem`,
+              padding: `0.5rem 0.5rem 1rem 0.5rem`,
               display: `flex`,
               flexDirection: `column`
             }}
           >
             <h1
               style={{
-                margin: `auto 0`,
-                fontSize: `0.75rem`
+                margin: `0.5rem 0`,
+                fontSize: `1rem`
               }}
             >
-              Challenge a friend:
+              { timer ? `Challenge a friend:` : `Send to a friend:` }
             </h1>
             <h1
               style={{
                 margin: `auto 0`,
-                fontSize: `0.75rem`
+                fontSize: `0.7rem`
               }}
             >
               <Link
-                to={`/?puzzle=${puzzleId}`}
+                to={`/puzzle/?id=${puzzleId}`}
                 style={{
                   color: `white`,
                   textDecoration: `none`,
                 }}
               >
-                {`https://block-race.netlify.com/?puzzle=${puzzleId}`}
+                {`https://block-race.netlify.com/puzzle/?id=${puzzleId}`}
               </Link>
+            </h1>
+          </div>
+        )
+        : null
+      }
+      {timer && doneTime && doneSeconds && puzzleId && record > 0 ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.5rem 0.5rem 1rem 0.5rem`,
+              display: `flex`,
+              flexDirection: `column`
+            }}
+          >
+            <h1
+              style={{
+                margin: `0.5rem 0`,
+                fontSize: `1rem`
+              }}
+            >
+              { 
+                retrievedRecord.value && 
+                retrievedRecord.value.best > 0 && 
+                retrievedRecord.value.best <= doneSeconds &&
+                record == 1 ? 
+                  `Record for this puzzle:` : 
+                  `You just set a new record!` 
+              }
+            </h1>
+            <h1
+              style={{
+                margin: `auto 0`,
+                fontSize: `1rem`
+              }}
+            >
+              {
+                retrievedRecord.value && 
+                retrievedRecord.value.best > 0 && 
+                retrievedRecord.value.best <= doneSeconds &&
+                record == 1 ? 
+                  `${retrievedRecord.value.name} - ${formatSeconds(retrievedRecord.value.best)}` :
+                  record < 2 && !submittedRecord.loading ? 
+                  (
+                    <div
+                      style={{
+                        display: "flex"
+                      }}
+                    >
+                      <input 
+                        type="text" 
+                        placeholder="AAA"
+                        maxLength={3}
+                        size={5}
+                        onChange={e => setInitials(e.target.value)}
+                        style={{
+                          margin: `0 1rem 0 auto`,
+                        }}
+                      ></input>
+                      <button
+                        type="button"
+                        style={{
+                          margin: `0 auto 0 1rem`,
+                          padding: `0.25rem 1rem`,
+                          background: `orange`,
+                          color: `#FFF`
+                        }}
+                        onClick={() => {
+                          if (initials.length > 0 && initials.length <= 3) {
+                            submitNewRecord();
+                          }
+                        }}
+                      >
+                        Submit your initials
+                      </button>
+                    </div>
+                  ) :
+                  (
+                    <div>
+                      {submittedRecord.loading ? `Submitting...` : `You're in the record books!`}
+                    </div>
+                  )
+              }
             </h1>
           </div>
         )

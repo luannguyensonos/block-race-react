@@ -1,19 +1,21 @@
 import React from "react"
 import styled from "styled-components"
-import { GameContext } from "../pages/index"
+import { GameContext } from "../pages/puzzle"
 import Piece from "../components/piece"
 
 const Tray = ({ className }) => {
 
     return (
         <GameContext.Consumer>
-            {({pieces}) => (
-                <div className={className}>
-                    {Object.keys(pieces).map(i => (
-                        <Piece name={i}/>
-                    ))}            
-                </div>
-            )}
+            {({pieces, timer, doneTime}) =>
+                (
+                    <div className={className}>
+                        {pieces && timer && !doneTime ? Object.keys(pieces).map(i => (
+                            <Piece name={i}/>
+                        )) : null}            
+                    </div>
+                )
+            }
         </GameContext.Consumer>
     )
 }
