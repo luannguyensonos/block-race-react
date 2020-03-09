@@ -5,6 +5,8 @@ import SEO from "../components/seo"
 import { useAsyncFn } from 'react-use'
 import { formatSeconds } from "../components/header"
 
+const odds = n => { return Math.random() * n <= 1 };
+
 const IndexPage = () => {
 
   const [recent, setRecent] = useState([]);
@@ -13,8 +15,14 @@ const IndexPage = () => {
     const thisRecord = await fetch(`/.netlify/functions/getAllRecords`)
       .then(res => res.json())
     console.log("Got all records:", thisRecord)
+    let recordsLeft = thisRecord.length;
     const reduce = thisRecord.reduce((obj, r) => {
-      if (obj.rArr.length < 5) obj.rArr.push(r.data);
+      if ((obj.rArr.length < 5 &&
+        odds(thisRecord.length)) ||
+        recordsLeft-- <= 5-obj.rArr.length)
+      {
+        obj.rArr.push(r.data);
+      }
       if (!obj.hist[r.data.name]) obj.hist[r.data.name] = 0
       obj.hist[r.data.name]++;
       return obj;
@@ -59,17 +67,24 @@ const IndexPage = () => {
             margin: `0.5rem 0`
           }}
         >
-          <h2>Recent records</h2>
+          <h2>Recent Records</h2>
           { allRecords.loading ?
               "Loading..." :
               allRecords.value ?
               (
                 <ul>
                   {recent.map(r => (
-                    <li>
+                    <li
+                      style={{
+                        display: `grid`,
+                        gridTemplateColumns: `2.5fr 1fr 1fr`,
+                      }}
+                    >
                       <Link to={`/puzzle/?id=${r.puzzleId}`}>
-                        {`${r.puzzleId} - ${r.name} - ${formatSeconds(r.best)}`}
+                        {r.puzzleId}
                       </Link>
+                      <span>{r.name}</span>
+                      <span>{formatSeconds(r.best)}</span>
                     </li>
                   ))}
                 </ul>
@@ -81,15 +96,21 @@ const IndexPage = () => {
             margin: `0.5rem 0`
           }}
         >
-          <h2>Most records</h2>
+          <h2>Most Records</h2>
           { allRecords.loading ?
               "Loading..." :
               allRecords.value ?
               (
                 <ul>
                   {most.map(r => (
-                    <li>
-                      {`${r[0]} - ${r[1]}`}
+                    <li
+                      style={{
+                        display: `grid`,
+                        gridTemplateColumns: `1fr 2fr`,
+                      }}
+                    >
+                      <span>{r[0]}</span>
+                      <span>{`${r[1]} records`}</span>
                     </li>
                   ))}
                 </ul>
