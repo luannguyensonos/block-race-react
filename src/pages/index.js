@@ -17,9 +17,9 @@ const IndexPage = () => {
     console.log("Got all records:", thisRecord)
     let recordsLeft = thisRecord.length;
     const reduce = thisRecord.reduce((obj, r) => {
-      if ((obj.rArr.length < 5 &&
+      if ((obj.rArr.length < 10 &&
         odds(thisRecord.length)) ||
-        recordsLeft-- <= 5-obj.rArr.length)
+        recordsLeft-- <= 10-obj.rArr.length)
       {
         obj.rArr.push(r.data);
       }
@@ -59,64 +59,10 @@ const IndexPage = () => {
         style={{
           display: `flex`,
           flexDirection: `column`,
-          height: `90vh`
+          height: `90vh`,
+          fontSize: `1rem`
         }}
       >
-        <div
-          style={{
-            margin: `0.5rem 0`
-          }}
-        >
-          <h2>Recent Records</h2>
-          { allRecords.loading ?
-              "Loading..." :
-              allRecords.value ?
-              (
-                <ul>
-                  {recent.map(r => (
-                    <li
-                      style={{
-                        display: `grid`,
-                        gridTemplateColumns: `2.5fr 1fr 1fr`,
-                      }}
-                    >
-                      <Link to={`/puzzle/?id=${r.puzzleId}`}>
-                        {r.puzzleId}
-                      </Link>
-                      <span>{r.name}</span>
-                      <span>{formatSeconds(r.best)}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : "Nothing to see here"
-          }
-        </div>
-        <div
-          style={{
-            margin: `0.5rem 0`
-          }}
-        >
-          <h2>Most Records</h2>
-          { allRecords.loading ?
-              "Loading..." :
-              allRecords.value ?
-              (
-                <ul>
-                  {most.map(r => (
-                    <li
-                      style={{
-                        display: `grid`,
-                        gridTemplateColumns: `1fr 2fr`,
-                      }}
-                    >
-                      <span>{r[0]}</span>
-                      <span>{`${r[1]} records`}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : "Wow, such empty"
-          }
-        </div>
         <div
           style={{
             margin: `0.5rem auto`
@@ -141,6 +87,61 @@ const IndexPage = () => {
             </button>
 
           </Link>
+        </div>
+        <div
+          style={{
+            margin: `0.5rem 0`
+          }}
+        >
+          <h4>Most Records</h4>
+          { allRecords.loading ?
+              "Loading..." :
+              allRecords.value ?
+              (
+                <ul>
+                  {most.map(r => (
+                    <li
+                      style={{
+                        display: `grid`,
+                        gridTemplateColumns: `1fr 2fr`,
+                      }}
+                    >
+                      <span>{r[0]}</span>
+                      <span>{`${r[1]} records`}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : "Wow, such empty"
+          }
+        </div>
+        <div
+          style={{
+            margin: `0.5rem 0`
+          }}
+        >
+          <h4>Recent Records</h4>
+          { allRecords.loading ?
+              "Loading..." :
+              allRecords.value ?
+              (
+                <ul>
+                  {recent.map(r => (
+                    <li
+                      style={{
+                        display: `grid`,
+                        gridTemplateColumns: `2.5fr 1fr 1fr`,
+                      }}
+                    >
+                      <Link to={`/puzzle/?id=${r.puzzleId}`}>
+                        {r.puzzleId}
+                      </Link>
+                      <span>{r.name}</span>
+                      <span>{formatSeconds(r.best)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : "Nothing to see here"
+          }
         </div>
       </div>
     </Layout>
