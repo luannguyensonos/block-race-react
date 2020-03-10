@@ -5,7 +5,7 @@ import SEO from "../components/seo"
 import { useAsyncFn } from 'react-use'
 import { formatSeconds } from "../components/header"
 
-const odds = (n,x) => { return Math.random() * n <= n/(10+2*x) };
+const odds = (n,x) => { return Math.random() * n <= n/(10+3*x) };
 
 const IndexPage = () => {
 

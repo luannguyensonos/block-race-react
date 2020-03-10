@@ -18,21 +18,22 @@ export function handler(event, context, callback) {
   return client.query(
     q.Paginate(
       q.Match(
-        q.Index('all_records')
-      )
+        q.Index('records_sort_by_ts_desc')
+      ),
+      {
+        size: 10368
+      }
     )
   )
   .then((response) => {
     const refs = response.data
-    console.log("refs", refs)
     console.log(`${refs.length} found`)
     // See. http://bit.ly/2LG3MLg
     const getAllDataQuery = refs.map((ref) => {
-      return q.Get(ref)
+      return q.Get(ref[1])
     })
     // then query the refs
     return client.query(getAllDataQuery).then((ret) => {
-      console.log("Got em", JSON.stringify(ret))
       return callback(null, {
         statusCode: 200,
         body: JSON.stringify(ret)
