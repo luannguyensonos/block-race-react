@@ -54,7 +54,7 @@ const IndexPage = () => {
     {
       retrieveRecords();
     }
-  }, [allRecords]);
+  }, [allRecords, retrieveRecords]);
 
   return (
     <Layout>
@@ -105,6 +105,7 @@ const IndexPage = () => {
                 <ul>
                   {most.map(r => (
                     <li
+                      key={r[0]}
                       style={{
                         display: `grid`,
                         gridTemplateColumns: `1fr 3fr`,
@@ -131,6 +132,7 @@ const IndexPage = () => {
                 <ul>
                   {recent.map(r => (
                     <li
+                      key={r.puzzleId}
                       style={{
                         display: `grid`,
                         gridTemplateColumns: `2.5fr 1fr 1fr`,

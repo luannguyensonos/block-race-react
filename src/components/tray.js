@@ -11,7 +11,7 @@ const Tray = ({ className }) => {
                 (
                     <div className={className}>
                         {pieces && timer && !doneTime ? Object.keys(pieces).map(i => (
-                            <Piece name={i}/>
+                            <Piece key={i} name={i}/>
                         )) : null}            
                     </div>
                 )

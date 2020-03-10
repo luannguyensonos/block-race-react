@@ -61,31 +61,34 @@ const Header = () => {
     return thisRecord
   }, [puzzleId, initials, doneSeconds, retrievedRecord])
 
-  const formatTime = (start) => {
-    const curr = doneTime ? doneTime : new Date();
-    const seconds = Math.floor((curr.getTime() - start.getTime()) / 1000);
 
-    if (doneTime) {
-      setDoneSeconds(seconds);
-    }
-
-    return formatSeconds(seconds);
-  }
 
   useEffect(() => {
     if (timer != null) {
       setTimeout(() => {
-        const prefix = doneTime ? "Completed in " : "";
-        setTitle(prefix+formatTime(timer));
+        const curr = doneTime ? doneTime : new Date();
+        const secs = Math.floor((curr.getTime() - timer.getTime()) / 1000);
+        console.log("Calc", doneTime, secs)
+        if (doneTime) {
+          setDoneSeconds(secs);
+          if (record < 1 && !(retrievedRecord.loading || retrievedRecord.error)) {
+            retrieveRecord(puzzleId);
+          }
+        }
+        const formattedTime = secs >= 60 ? `${Math.floor(secs/60)}m ${secs%60}s` : `${secs}s`
+        setTitle(`${doneTime ? "Completed in " : ""}${formattedTime}`);
       }, 1000)
     }
-
-    if (doneTime && doneSeconds) {
-      if (record < 1 && !(retrievedRecord.loading || retrievedRecord.error)) {
-        retrieveRecord(puzzleId);
-      }
-    }
-  }, [timer, doneTime, title, record]);
+  }, [timer,
+    puzzleId,
+    doneTime,
+    doneSeconds,
+    setDoneSeconds,
+    retrievedRecord.loading,
+    retrievedRecord.error,
+    retrieveRecord,
+    title,
+    record]);
 
   return (
     <header

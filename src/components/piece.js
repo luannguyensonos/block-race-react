@@ -1,4 +1,4 @@
-import React from "react"
+import React, {} from "react"
 import styled from "styled-components"
 import { GameContext } from "../pages/puzzle"
 
@@ -68,7 +68,10 @@ const Piece = ({ name, className }) => {
     return (
         <GameContext.Consumer>
             {({activePiece, setActivePiece, pieces, setPieces}) => (
-                <div 
+                <div
+                    key={pieces[name]}
+                    tabIndex={0}
+                    role="button"
                     className={className + 
                         ` ${activePiece === name ? "active" : "inactive"}` +
                         ` ori${pieces[name].orientation}` +
@@ -87,6 +90,7 @@ const Piece = ({ name, className }) => {
                             }
                         }
                     }}
+                    onKeyPress={()=>{}}
                 >
                     {range.map(i => {
                         const row = [];

@@ -130,7 +130,9 @@ const Board = ({ className }) => {
                     const spaceNum = Number.parseInt(`${i}${j}`);
                     const isPreview = preview.spaces && preview.spaces.includes(spaceNum);
                     squares.push(
-                        <div 
+                        <div
+                            role="button"
+                            tabIndex={0}
                             id={`${i}${j}`} 
                             key={`${i}${j}`}
                             className={
@@ -144,6 +146,7 @@ const Board = ({ className }) => {
                             onTouchStart={(e) => {handleTouchStart(e)}}
                             onTouchMove={(e) => {handleTouchMove(e)}}
                             onTouchEnd={(e) => {handleTouchEnd(e)}}
+                            onKeyPress={()=>{}}
                         >
                         </div>
                     );
