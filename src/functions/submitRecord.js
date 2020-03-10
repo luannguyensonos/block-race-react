@@ -48,9 +48,21 @@ export function handler(event, context, callback) {
     })
   } else {
     return client.query(
-      q.Update(
-        q.Ref(q.Collection("records"), data.puzzleId),
-        {data}
+      q.Let(
+        {"thisRecord": q.Get(q.Ref(q.Collection('records'), data.puzzleId))},
+        q.Let(
+          {"thisBest": q.Select(["data", "best"], q.Var("thisRecord"))},
+          q.If(
+            q.GT(q.Var("thisBest"), data.best),
+            q.Do(
+              q.Update(
+                q.Ref(q.Collection("records"), data.puzzleId),
+                {data}
+              )
+            ),
+            { ref: {error: "Oops! Someone beat you in the meantime."} }
+          )
+        )
       )
     )
     .then((response) => {

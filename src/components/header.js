@@ -52,12 +52,12 @@ const Header = () => {
       })
     })
       .then(res => res.json())
-    if (!thisRecord || !thisRecord.ref) { // Check if it succeeded
+    if (!thisRecord.ref) {
       return { failed: true }
-    } else {
-      setInitials("");
-      setRecord(2);
     }
+
+    setInitials("");
+    setRecord(2);
     return thisRecord
   }, [puzzleId, initials, doneSeconds, retrievedRecord])
 
@@ -198,7 +198,7 @@ const Header = () => {
                 retrievedRecord.value.best > 0 && 
                 retrievedRecord.value.best <= doneSeconds &&
                 record === 1 ? 
-                  `Record for this puzzle:` : 
+                  `Record for this puzzle:` :
                   `You just set a new record!` 
               }
             </h1>
@@ -251,7 +251,11 @@ const Header = () => {
                   ) :
                   (
                     <div>
-                      {submittedRecord.loading ? `Submitting...` : `You're in the record books!`}
+                      {submittedRecord.loading ? 
+                        `Submitting...` :
+                          submittedRecord.value.ref && submittedRecord.value.ref.error ?
+                            `${submittedRecord.value.ref.error}` :
+                            `You're in the record books!`}
                     </div>
                   )
               }
