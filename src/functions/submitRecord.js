@@ -17,7 +17,13 @@ export function handler(event, context, callback) {
   const data = JSON.parse(event.body)
   console.log("Creating a record", data)
 
-  if (data.previous <= 0) {
+  // Forced failure case
+  if (data.name === "!@#") {
+    return callback(null, {
+      statusCode: 200,
+      body: JSON.stringify(null)
+    })
+  } else if (data.previous <= 0) {
     /* construct the fauna query */
     return client.query(
       q.Create(
