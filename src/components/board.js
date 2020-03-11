@@ -1,6 +1,6 @@
 import React, {useContext, useState} from "react"
 import styled from "styled-components"
-import { GameContext, RANGE } from "../pages/puzzle"
+import { GameContext, RANGE } from "../components/game"
 import { pieceColors } from "../components/piece"
 
 const moves = {
@@ -132,7 +132,6 @@ const Board = ({ className }) => {
                     squares.push(
                         <div
                             role="button"
-                            tabIndex={0}
                             id={`${i}${j}`} 
                             key={`${i}${j}`}
                             className={

@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components"
-import { GameContext } from "../pages/puzzle"
+import { GameContext } from "../components/game"
 import Piece from "../components/piece"
 
 const Tray = ({ className }) => {

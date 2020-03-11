@@ -1,6 +1,6 @@
 import React, {} from "react"
 import styled from "styled-components"
-import { GameContext } from "../pages/puzzle"
+import { GameContext } from "../components/game"
 
 const range = [1,2,3,4];
 
@@ -69,8 +69,7 @@ const Piece = ({ name, className }) => {
         <GameContext.Consumer>
             {({activePiece, setActivePiece, pieces, setPieces}) => (
                 <div
-                    key={pieces[name]}
-                    tabIndex={0}
+                    key={pieces[name] || Math.random()}
                     role="button"
                     className={className + 
                         ` ${activePiece === name ? "active" : "inactive"}` +
