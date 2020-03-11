@@ -16,7 +16,6 @@ export const formatSeconds = (secs) => {
     return `${secs}s`
   }
 }
-const odds = (n,x) => { return Math.random() * n <= n/(10*x) };
 
 const IndexPage = () => {
 
@@ -28,13 +27,10 @@ const IndexPage = () => {
     let recordsLeft = thisRecord.length;
     const usedNames = {};
     const reduce = thisRecord.reduce((obj, r) => {
-      if ((obj.rArr.length < 10 &&
-        ( !usedNames[r.data.name] ||
-        odds(thisRecord.length, usedNames[r.data.name]))) ||
+      if ((obj.rArr.length < 10 && !usedNames[r.data.name] && r.data.best >= 35) ||
         recordsLeft <= 10-obj.rArr.length)
       {
-        usedNames[r.data.name] = usedNames[r.data.name] ?
-          usedNames[r.data.name]+1 : 1;
+        usedNames[r.data.name] = true;
         obj.rArr.push(r.data);
       }
       recordsLeft--;
