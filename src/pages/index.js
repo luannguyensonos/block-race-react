@@ -92,17 +92,21 @@ const IndexPage = () => {
     return thisRecord || "STOP!"
   }, [])
 
-  useEffect(() => {
+  const reloadData = () => {
     if (!allRecords.value &&
-        !(allRecords.loading || allRecords.error))
+      !(allRecords.loading || allRecords.error))
     {
       retrieveRecords();
     }
     if (!allChal.value &&
       !(allChal.loading || allChal.error))
-  {
-    retrieveChals();
+    {
+      retrieveChals();
+    }
   }
+
+  useEffect(() => {
+    reloadData()
   }, [allRecords, retrieveRecords, allChal, retrieveChals]);
 
   return (
@@ -239,7 +243,25 @@ const IndexPage = () => {
                       </li>
                     ))}
                   </ul>
-                ) : "Nothing to see here"
+                ) : (
+                  <>
+                    Nothing to see here
+                    <button
+                      type="button"
+                      style={{
+                        margin: `0 auto 0 1rem`,
+                        padding: `0.25rem 1rem`,
+                        background: `#DF950C`,
+                        color: `#FFF`
+                      }}
+                      onClick={() => {
+                        reloadData()
+                      }}
+                    >
+                      Reload
+                    </button>
+                  </>
+                )
             }
           </div>
         </div>
