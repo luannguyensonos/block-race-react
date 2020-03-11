@@ -57,7 +57,7 @@ export function handler(event, context, callback) {
           },
           q.If(
             q.Equals(q.Var("thisName"), data.name),
-            { ref: {error: "Sorry! You can't improve your own score."} },
+            { ref: {error: "Sorry! You cannot improve your own score."} },
             q.If(
               q.GT(q.Var("thisBest"), data.best),
               q.Do(

@@ -92,14 +92,12 @@ const IndexPage = () => {
     return thisRecord || "STOP!"
   }, [])
 
-  const reloadData = () => {
-    if (!allRecords.value &&
-      !(allRecords.loading || allRecords.error))
+  const reloadData = (manual = false) => {
+    if (manual || (!allRecords.value && !(allRecords.loading || allRecords.error)))
     {
       retrieveRecords();
     }
-    if (!allChal.value &&
-      !(allChal.loading || allChal.error))
+    if (manual || (!allChal.value && !(allChal.loading || allChal.error)))
     {
       retrieveChals();
     }
@@ -255,10 +253,10 @@ const IndexPage = () => {
                         color: `#FFF`
                       }}
                       onClick={() => {
-                        reloadData()
+                        reloadData(true)
                       }}
                     >
-                      Reload
+                      {`${allRecords.loading ? `Hold up...` : `Reload`}`}
                     </button>
                   </>
                 )
