@@ -15,7 +15,6 @@ const client = new faunadb.Client({
 
 export function handler(event, context, callback) {
   const data = JSON.parse(event.body)
-  console.log("Creating a record", data)
 
   // Forced failure case
   if (data.name === "!@#") {
@@ -24,6 +23,7 @@ export function handler(event, context, callback) {
       body: JSON.stringify(null)
     })
   } else if (data.previous <= 0) {
+    console.log("Creating a NEW record", data)
     /* construct the fauna query */
     return client.query(
       q.Create(
@@ -47,6 +47,7 @@ export function handler(event, context, callback) {
       })
     })
   } else {
+    console.log("Updating an existing record", data)
     return client.query(
       q.Let(
         {"thisRecord": q.Get(q.Ref(q.Collection('records'), data.puzzleId))},
@@ -66,7 +67,7 @@ export function handler(event, context, callback) {
                   {data}
                 )
               ),
-              { ref: {error: "Oops! Someone beat you in the meantime."} }
+              { ref: {error: "Oh no! Someone beat you in the meantime."} }
             )
           )
         )
