@@ -51,16 +51,23 @@ export function handler(event, context, callback) {
       q.Let(
         {"thisRecord": q.Get(q.Ref(q.Collection('records'), data.puzzleId))},
         q.Let(
-          {"thisBest": q.Select(["data", "best"], q.Var("thisRecord"))},
+          {
+            "thisBest": q.Select(["data", "best"], q.Var("thisRecord")),
+            "thisName": q.Select(["data", "name"], q.Var("thisRecord"))
+          },
           q.If(
-            q.GT(q.Var("thisBest"), data.best),
-            q.Do(
-              q.Update(
-                q.Ref(q.Collection("records"), data.puzzleId),
-                {data}
-              )
-            ),
-            { ref: {error: "Oops! Someone beat you in the meantime."} }
+            q.Equals(q.Var("thisName"), data.name),
+            { ref: {error: "Sorry! You can't improve your own score."} },
+            q.If(
+              q.GT(q.Var("thisBest"), data.best),
+              q.Do(
+                q.Update(
+                  q.Ref(q.Collection("records"), data.puzzleId),
+                  {data}
+                )
+              ),
+              { ref: {error: "Oops! Someone beat you in the meantime."} }
+            )
           )
         )
       )
