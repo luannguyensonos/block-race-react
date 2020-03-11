@@ -6,6 +6,10 @@ import SEO from "../components/seo"
 import { useAsyncFn } from 'react-use'
 
 export const formatSeconds = (secs) => {
+  if (secs === 999) {
+    return "DNP"
+  }
+
   if (secs >= 60) {
     return `${Math.floor(secs/60)}m ${secs%60}s`
   } else {

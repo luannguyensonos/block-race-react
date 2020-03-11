@@ -178,23 +178,25 @@ const H2HHeader = (id) => {
         const curr = doneTime ? doneTime : new Date();
         const secs = Math.floor((curr.getTime() - timer.getTime()) / 1000);
         if (doneTime) {
-          console.log("GAME IS DONE!", updatedChallenge)
-          if ((!updatedChallenge.value || 
-            (updatedChallenge.value.player1time === 999 && !doneSeconds) ||
-            (updatedChallenge.value.player2.length > 0 && updatedChallenge.value.player2time === 999 && !doneSeconds)) && 
-            !updatedChallenge.loading) 
-          {
-            updateChallenge(secs)
-          }
           setDoneSeconds(secs);
         }
         const formattedTime = secs >= 60 ? `${Math.floor(secs/60)}m ${secs%60}s` : `${secs}s`
         setTitle(`${doneTime ? "Completed in " : ""}${formattedTime}`);
       }, 1000)
+      if (doneTime && doneSeconds) {
+        if ((!updatedChallenge.value || 
+          (updatedChallenge.value.player1time === 999) ||
+          (updatedChallenge.value.player2.length > 0 && updatedChallenge.value.player2time === 999)) && 
+          !updatedChallenge.loading) 
+        {
+          console.log("Making an update!", updatedChallenge, trueChallenge)
+          updateChallenge(doneSeconds)
+        }
+      }
     }
   }, [timer,
-    doneTime,
-    title
+    title,
+    doneSeconds
   ]);
   
   return (
@@ -286,17 +288,7 @@ const H2HHeader = (id) => {
               </Link>
             </h1>
             {
-              updatedChallenge && updatedChallenge.loading ?
-              (
-                <h1
-                  style={{
-                    margin: `0.5rem 0`,
-                    fontSize: `1rem`
-                  }}
-                >
-                  Loading challenge results...
-                </h1>
-              ) : updatedChallenge && updatedChallenge.value && updatedChallenge.value.failed ?
+              updatedChallenge && updatedChallenge.value && updatedChallenge.value.failed ?
               (
                 <div
                   style={{
