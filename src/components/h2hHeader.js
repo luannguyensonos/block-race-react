@@ -120,11 +120,13 @@ const H2HHeader = (id) => {
 
     if (!thisChallenge.puzzleId) return { failed: true }
 
+    let newState;
     if (secs) {
       if (thisChallenge.player1time === 999) {
         thisChallenge.player1time = secs;
       } else if (thisChallenge.player2time === 999) {
         thisChallenge.player2time = secs;
+        newState = 3;
       }
     } else {
       thisChallenge.player2 = initials.toUpperCase()
@@ -141,6 +143,7 @@ const H2HHeader = (id) => {
       return { failed: true }
     }
     setTrueChallenge(thisRecord.data)
+    if (newState) setChallengeState(newState)
     return thisRecord.data
   }, [trueChallenge,
     setTrueChallenge,
@@ -269,24 +272,30 @@ const H2HHeader = (id) => {
                 fontSize: `1rem`
               }}
             >
-              { `Challenge Link:` }
+              { challengeState < 3 ? 
+                `Challenge Link:` : 
+                `Player ${trueChallenge.player1time < trueChallenge.player2time ? "1" : "2"} prevailed!` }
             </h1>
-            <h1
-              style={{
-                margin: `auto 0`,
-                fontSize: `0.7rem`
-              }}
-            >
-              <Link
-                to={`/h2h/?id=${challengeId}`}
-                style={{
-                  color: `white`,
-                  textDecoration: `none`,
-                }}
-              >
-                {`https://block-race.netlify.com/h2h/?id=${challengeId}`}
-              </Link>
-            </h1>
+            {challengeState < 3 ? 
+              (
+                <h1
+                  style={{
+                    margin: `auto 0`,
+                    fontSize: `0.7rem`
+                  }}
+                >
+                  <Link
+                    to={`/h2h/?id=${challengeId}`}
+                    style={{
+                      color: `white`,
+                      textDecoration: `none`,
+                    }}
+                  >
+                    {`https://block-race.netlify.com/h2h/?id=${challengeId}`}
+                  </Link>
+                </h1>
+              ): null
+            }
             {
               updatedChallenge && updatedChallenge.value && updatedChallenge.value.failed ?
               (
