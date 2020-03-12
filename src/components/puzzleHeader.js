@@ -1,6 +1,7 @@
 import { Link } from "gatsby"
 import React, {useContext, useState, useEffect} from "react"
 import { useAsyncFn } from 'react-use'
+import { LeftButton, RightButton } from "../components/button"
 import { formatSeconds } from "../pages/index"
 import { 
   GameContext,
@@ -133,14 +134,7 @@ const PuzzleHeader = (id) => {
           </Link>
         </h1>
         {puzzleId ? (
-          <button
-            type="button"
-            style={{
-              margin: `0 0 0 auto`,
-              padding: `0.25rem 1rem`,
-              background: `#DF950C`,
-              color: `#FFF`
-            }}
+          <RightButton
             onClick={() => {
               timer == null ?
                 startGame() :
@@ -148,7 +142,7 @@ const PuzzleHeader = (id) => {
             }}
           >
             {`${timer == null ? "Start" : "Reset"}`}
-          </button>
+          </RightButton>
         ) : null}
       </div>
       {timer && doneTime && doneSeconds && puzzleId && record > 0 ?
@@ -203,17 +197,10 @@ const PuzzleHeader = (id) => {
                         size={5}
                         onChange={e => setInitials(e.target.value)}
                         style={{
-                          margin: `0 0.75rem 0 auto`,
+                          margin: `0 1rem 0 auto`,
                         }}
                       ></input>
-                      <button
-                        type="button"
-                        style={{
-                          margin: `0 auto 0 0.75rem`,
-                          padding: `0.25rem 1rem`,
-                          background: `#DF950C`,
-                          color: `#FFF`
-                        }}
+                      <LeftButton
                         onClick={() => {
                           if (initials.length > 0 && initials.length <= 3) {
                             submitNewRecord();
@@ -221,7 +208,7 @@ const PuzzleHeader = (id) => {
                         }}
                       >
                         {submittedRecord.value && submittedRecord.value.failed ? `Try submitting again` : `Submit your initials`}
-                      </button>
+                      </LeftButton>
                     </div>
                   ) :
                   (

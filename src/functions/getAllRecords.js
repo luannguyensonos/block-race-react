@@ -14,7 +14,6 @@ const client = new faunadb.Client({
 })
 
 export function handler(event, context, callback) {
-  console.log("GETTING ALL RECORDS")
   return client.query(
     q.Paginate(
       q.Match(
@@ -40,7 +39,7 @@ export function handler(event, context, callback) {
       })
     })
   }).catch((error) => {
-    console.log("error", error)
+    console.log("[Error]", error)
     return callback(null, {
       statusCode: 400,
       body: JSON.stringify(error)

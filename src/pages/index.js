@@ -3,6 +3,7 @@ import { Link } from "gatsby"
 import Layout from "../components/layout"
 import Header from "../components/header"
 import LoadingRows from "../components/loadingRows"
+import Button, {MutedButton} from "../components/button"
 import SEO from "../components/seo"
 import { useAsyncFn } from 'react-use'
 
@@ -28,7 +29,7 @@ const IndexPage = () => {
     let recordsLeft = thisRecord.length;
     const usedNames = {};
     const reduce = thisRecord.reduce((obj, r) => {
-      if ((obj.rArr.length < 10 && !usedNames[r.data.name] && r.data.best >= 35) ||
+      if ((obj.rArr.length < 10 && !usedNames[r.data.name] && r.data.best >= 30) ||
         recordsLeft <= 10-obj.rArr.length)
       {
         usedNames[r.data.name] = true;
@@ -53,7 +54,7 @@ const IndexPage = () => {
     });
     setMost(sortable.slice(0,5));
 
-    return thisRecord || "STOP!"
+    return thisRecord
   }, [])
 
   const [wins, setWins] = useState([]);
@@ -62,7 +63,7 @@ const IndexPage = () => {
       .then(res => res.json())
 
     const reduce = thisRecord.reduce((obj, r) => {
-      if (r.data.player1time < 999 && r.data.player2time < 999) {
+      if (r.data.player1time < 999 && r.data.player2.length > 0) {
         if (!obj[r.data.player1]) obj[r.data.player1] = {w:0, l:0, t:0};
         if (!obj[r.data.player2]) obj[r.data.player2] = {w:0, l:0, t:0};
 
@@ -82,14 +83,17 @@ const IndexPage = () => {
 
     const sortable = [];
     for (var name in reduce) {
-        sortable.push([name, reduce[name].w, reduce[name].l, reduce[name].t]);
+      sortable.push([name, reduce[name].w, reduce[name].l, reduce[name].t]);
     }
     sortable.sort(function(a, b) {
-        return b[1] - a[1];
+      if (b[1] === a[1]) {
+        return a[2] - b[2]
+      }
+      return b[1] - a[1];
     });
     setWins(sortable.slice(0,5));
 
-    return thisRecord || "STOP!"
+    return thisRecord
   }, [])
 
   const reloadData = (manual = false) => {
@@ -134,17 +138,9 @@ const IndexPage = () => {
                   textDecoration: `none`,
                 }}
               >
-                <button
-                  type="button"
-                  style={{
-                    margin: `auto auto`,
-                    padding: `0.25rem 1rem`,
-                    background: `#DF950C`,
-                    color: `#FFF`
-                  }}
-                >
+                <Button>
                   Single Puzzle
-                </button>
+                </Button>
               </Link>
               <div>
                 <h4 style={{ marginTop: `1rem` }}>Most Records</h4>
@@ -177,17 +173,9 @@ const IndexPage = () => {
                   textDecoration: `none`,
                 }}
               >
-                <button
-                  type="button"
-                  style={{
-                    margin: `auto auto`,
-                    padding: `0.25rem 1rem`,
-                    background: `#DF950C`,
-                    color: `#FFF`
-                  }}
-                >
+                <Button>
                   Head-to-Head
-                </button>
+                </Button>
               </Link>
               <div>
                 <h4 style={{ marginTop: `1rem` }}>Most Wins</h4>
@@ -243,21 +231,13 @@ const IndexPage = () => {
                   </ul>
                 ) : (
                   <>
-                    Nothing to see here
-                    <button
-                      type="button"
-                      style={{
-                        margin: `0 auto 0 1rem`,
-                        padding: `0.25rem 1rem`,
-                        background: `#DF950C`,
-                        color: `#FFF`
-                      }}
+                    <MutedButton
                       onClick={() => {
                         reloadData(true)
                       }}
                     >
-                      {`${allRecords.loading ? `Hold up...` : `Reload`}`}
-                    </button>
+                      {`${allRecords.loading ? `Hold up...` : `Oops! Let's try reloading the data`}`}
+                    </MutedButton>
                   </>
                 )
             }

@@ -21,13 +21,12 @@ export function handler(event, context, callback) {
     )
   )
     .then((response) => {
-      console.log("success", response)
       return callback(null, {
         statusCode: 200,
         body: JSON.stringify(response)
       })
     }).catch((error) => {
-      console.log("error", error)
+      console.log("[Error]", error)
       return callback(null, {
         statusCode: 200,
         body: JSON.stringify(null)

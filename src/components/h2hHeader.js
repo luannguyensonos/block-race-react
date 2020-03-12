@@ -1,6 +1,7 @@
 import { Link } from "gatsby"
 import React, {useContext, useState, useEffect} from "react"
 import { useAsyncFn, useEffectOnce } from 'react-use'
+import Button, { LeftButton, RightButton } from "../components/button"
 import { formatSeconds } from "../pages/index"
 import { 
   GameContext,
@@ -59,6 +60,8 @@ const H2HHeader = (id) => {
       setChallengeId(cid)
       setPuzzleId(thisRecord.data.puzzleId)
       setTrueChallenge(thisRecord.data)
+    } else {
+      return { failed: true }
     }
     return thisRecord.data
   }, [setChallengeId, setChallengeState, setPuzzleId, setInitials])
@@ -86,7 +89,7 @@ const H2HHeader = (id) => {
   }, [puzzleId, initials, setChallengeId, setChallengeState])
 
   const [startedChallenge, startChallenge] = useAsyncFn(async () => {
-    if (challengeState === 0) {
+    if (challengeState === 0 && puzzleId.length > 0) {
       await generateChallenge().then(ret => {
         if (ret.puzzleId) // This assumes the call succeeded 
         {
@@ -115,7 +118,7 @@ const H2HHeader = (id) => {
     retrievedChallenge
   ])
 
-  const [updatedChallenge, updateChallenge] = useAsyncFn(async (secs) => {
+  const [updatedChallenge, updateChallenge] = useAsyncFn(async (secs, manual) => {
     const thisChallenge = {...trueChallenge}
 
     if (!thisChallenge.puzzleId) return { failed: true }
@@ -128,9 +131,13 @@ const H2HHeader = (id) => {
         thisChallenge.player2time = secs;
         newState = 3;
       }
+
+      // For debugging purposes
+      if (manual) thisChallenge.manual = true;
     } else {
       thisChallenge.player2 = initials.toUpperCase()
     }
+
     const thisRecord = await fetch(`/.netlify/functions/updateChallenge`, {
       method: "POST",
       body: JSON.stringify({
@@ -234,14 +241,7 @@ const H2HHeader = (id) => {
           </Link>
         </h1>
         {initials.length > 0 && !timer ? (
-          <button
-            type="button"
-            style={{
-              margin: `0 0 0 auto`,
-              padding: `0.25rem 1rem`,
-              background: `#DF950C`,
-              color: `#FFF`
-            }}
+          <RightButton
             onClick={() => {
               console.log("Clicked")
               if (!generatedChallenge.loading) {
@@ -252,9 +252,70 @@ const H2HHeader = (id) => {
             {generatedChallenge.loading ? `Get ready!` : 
               generatedChallenge.value && generatedChallenge.value.failed ? `Try again` :
               `Let's Go!`}
-          </button>
+          </RightButton>
         ) : null}
       </div>
+      {(retrievedChallenge.value && retrievedChallenge.value.failed) || retrievedChallenge.error ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.75rem 0.75rem 1rem 0.75rem`,
+              display: `flex`,
+              flexDirection: `column`
+            }}
+          >
+            <h1
+              style={{
+                margin: `0.5rem 0`,
+                fontSize: `1rem`
+              }}
+            >
+              Hrm. Couldn't find your challenge.
+            </h1>
+            <a href={`/h2h`}>
+              <LeftButton>
+                Let's start a new one
+              </LeftButton>
+            </a>
+          </div>
+        ) : !timer && challengeState < 3 ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.75rem 0.75rem 1rem 0.75rem`,
+              display: `flex`,
+              flexDirection: `row`
+            }}
+          >
+              <h1
+                style={{
+                  margin: `0.5rem 0`,
+                  fontSize: `1rem`
+                }}
+              >
+                { 
+                  challengeState <= 1 ? 
+                    `Player 1, enter initials to start!` :
+                    `Player 2, you've been challenged!` 
+                }
+              </h1>
+              <input 
+                type="text" 
+                placeholder={initials.length > 0 ? initials : `AAA`}
+                maxLength={3}
+                size={5}
+                onChange={e => setInitials(e.target.value)}
+                style={{
+                  margin: `0 auto 0 1rem`,
+                }}
+              ></input>
+            </div>
+        ) : null
+      }
       {(doneTime || challengeState >= 3) && challengeId ?
         (
           <div
@@ -297,28 +358,22 @@ const H2HHeader = (id) => {
               ): null
             }
             {
-              updatedChallenge && updatedChallenge.value && updatedChallenge.value.failed ?
+              (updatedChallenge.value && updatedChallenge.value.failed) || updatedChallenge.error ?
               (
                 <div
                   style={{
-                    margin: `0.5rem 0`,
-                    fontSize: `1rem`
+                    margin: `2rem 0 1rem 0`,
+                    fontSize: `1rem`,
+                    display: `flex`
                   }}
                 >
-                  <button
-                    type="button"
-                    style={{
-                      margin: `0 0 0 auto`,
-                      padding: `0.25rem 1rem`,
-                      background: `#DF950C`,
-                      color: `#FFF`
-                    }}
+                  <Button
                     onClick={() => {
-                      updateChallenge(doneSeconds);
+                      updateChallenge(doneSeconds, true);
                     }}
                   >
-                    Oops. Click here to load results.
-                  </button>
+                    Oops. Click here to reload the results.
+                  </Button>
                 </div>
               ) : (trueChallenge && trueChallenge.puzzleId) ?
               (
@@ -360,43 +415,6 @@ const H2HHeader = (id) => {
           </div>
         )
         : null
-      }
-      {!timer && challengeState < 3 ?
-        (
-          <div
-            style={{
-              margin: `0 auto`,
-              maxWidth: 540,
-              padding: `0.75rem 0.75rem 1rem 0.75rem`,
-              display: `flex`,
-              flexDirection: `row`
-            }}
-          >
-            <h1
-              style={{
-                margin: `0.5rem 0`,
-                fontSize: `1rem`
-              }}
-            >
-              { 
-                challengeState <= 1 ? 
-                  `Player 1, enter initials to start!` :
-                  `Player 2, you've been challenged!` 
-              }
-            </h1>
-            <input 
-              type="text" 
-              placeholder={initials.length > 0 ? initials : `AAA`}
-              maxLength={3}
-              size={5}
-              onChange={e => setInitials(e.target.value)}
-              style={{
-                margin: `0 auto 0 1rem`,
-              }}
-            ></input>
-          </div>
-        ) :
-        null
       }
     </header>
   )
