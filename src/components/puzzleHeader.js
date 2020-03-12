@@ -77,24 +77,22 @@ const PuzzleHeader = (id) => {
         const secs = Math.floor((curr.getTime() - timer.getTime()) / 1000);
         if (doneTime) {
           setDoneSeconds(secs);
-          if (record < 1 && !(retrievedRecord.loading || retrievedRecord.error)) {
-            retrieveRecord(puzzleId);
-          }
         }
         const formattedTime = secs >= 60 ? `${Math.floor(secs/60)}m ${secs%60}s` : `${secs}s`
         setTitle(`${doneTime ? "Completed in " : ""}${formattedTime}`);
       }, 1000)
     }
-  }, [timer,
-    puzzleId,
+    if (doneTime && doneSeconds) {
+      if ((!retrievedRecord.value || record <= 0) && !(retrievedRecord.loading || retrievedRecord.error)) {
+        retrieveRecord(puzzleId);
+      }
+    }
+  }, [
+    timer,
     doneTime,
     doneSeconds,
-    setDoneSeconds,
-    retrievedRecord.loading,
-    retrievedRecord.error,
-    retrieveRecord,
-    title,
-    record]);
+    title
+  ]);
 
   if (!puzzleId) {
     const initialBlockers = id && id.id && id.id.length === 14 ?

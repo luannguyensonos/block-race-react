@@ -26,6 +26,7 @@ const H2HHeader = (id) => {
   const [challengeId, setChallengeId] = useState(null);
   const [challengeState, setChallengeState] = useState(0);
   const [trueChallenge, setTrueChallenge] = useState({});
+  const [updateRetries, setUpdateRetries] = useState(0);
   /*
     Challenge states
     0 - nothing yet, not even an id
@@ -206,8 +207,22 @@ const H2HHeader = (id) => {
     }
   }, [timer,
     title,
+    doneTime,
     doneSeconds
   ]);
+
+  // Testing out an auto-retry mechanism
+  useEffect(() => {
+    if (doneSeconds &&
+        updateRetries <= 2 &&
+        !updatedChallenge.loading &&
+        ((updatedChallenge.value && updatedChallenge.value.failed) || updatedChallenge.error)
+    ){
+      setUpdateRetries(updateRetries+1)
+      console.log("Auto retrying the update!", updateRetries)
+      updateChallenge(doneSeconds);
+    }
+  }, [updatedChallenge.value, updateChallenge.error])
   
   return (
     <header

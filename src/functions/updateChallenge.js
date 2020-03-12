@@ -18,7 +18,7 @@ export function handler(event, context, callback) {
   console.log("Updating a challenge", data)
 
   // Forced failure case
-  if (data.player1 === "!@#" || data.player2 === "!@#") {
+  if (data.player1 === "!@#" || data.player2 === "!@#" || data.fail) {
     return callback(null, {
       statusCode: 200,
       body: JSON.stringify(null)
