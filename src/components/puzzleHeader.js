@@ -1,6 +1,6 @@
 import { Link } from "gatsby"
 import React, {useContext, useState, useEffect} from "react"
-import { useAsyncFn } from 'react-use'
+import { useAsyncFn, useLocalStorage } from 'react-use'
 import { LeftButton, RightButton } from "../components/button"
 import PacmanLoader from "react-spinners/PacmanLoader"
 import { formatSeconds } from "../pages/index"
@@ -28,6 +28,7 @@ const PuzzleHeader = (id) => {
   const [title, setTitle] = useState("");
   const [doneSeconds, setDoneSeconds] = useState(0);
   const [initials, setInitials] = useState("");
+  const [local, setLocal] = useLocalStorage("recent", []);
 
   const [retrievedRecord, retrieveRecord] = useAsyncFn(async (pid) => {
     const thisRecord = await fetch(`/.netlify/functions/getRecord?id=${pid}`)
@@ -65,8 +66,9 @@ const PuzzleHeader = (id) => {
 
   useEffect(() => {
     const isDone = Object.keys(spaces).every(s => spaces[s] !== "FREE");
-    if (isDone) {
+    if (timer && isDone) {
       setDone(new Date());
+      setLocal([...local, puzzleId]);
     }
   }, [spaces, setDone]);
 
@@ -135,12 +137,12 @@ const PuzzleHeader = (id) => {
         {puzzleId ? (
           <RightButton
             onClick={() => {
-              timer == null ?
+              timer == null && !local.includes(puzzleId) ?
                 startGame() :
                 resetBoard()
             }}
           >
-            {`${timer == null ? "Start" : "Reset"}`}
+            {`${timer == null && !local.includes(puzzleId) ? "Start" : "Reset"}`}
           </RightButton>
         ) : null}
       </div>
@@ -234,7 +236,30 @@ const PuzzleHeader = (id) => {
           >
             <PacmanLoader color="white" size={10}/>
           </div>
-        ) : null
+        )
+        : !timer && puzzleId && local.includes(puzzleId) ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.75rem 0.75rem 1rem 0.75rem`,
+              display: `flex`
+            }}
+          >
+            <h1
+              style={{
+                margin: `auto auto`,
+                fontSize: `1rem`,
+                textAlign: `center`
+              }}
+            >
+              You've already played this puzzle.<br/>
+              Let's try a new one.
+            </h1>
+          </div>
+        )
+        : null
       }
     </header>
   )
