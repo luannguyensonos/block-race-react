@@ -349,7 +349,7 @@ const H2HHeader = (id) => {
               }}
             >
               { challengeState < 3 ? 
-                `Challenge Link:` : 
+                `Send to a friend or enemy:` : 
                 `Player ${trueChallenge.player1time < trueChallenge.player2time ? "1" : "2"} prevailed!` }
             </h1>
             {challengeState < 3 ? 
