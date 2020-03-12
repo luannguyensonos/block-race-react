@@ -2,6 +2,7 @@ import { Link } from "gatsby"
 import React, {useContext, useState, useEffect} from "react"
 import { useAsyncFn } from 'react-use'
 import { LeftButton, RightButton } from "../components/button"
+import PacmanLoader from "react-spinners/PacmanLoader"
 import { formatSeconds } from "../pages/index"
 import { 
   GameContext,
@@ -224,7 +225,18 @@ const PuzzleHeader = (id) => {
             </h1>
           </div>
         )
-        : null
+        : retrievedRecord.loading ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.75rem 0.75rem 1rem 0.75rem`,
+            }}
+          >
+            <PacmanLoader color="white" size={10}/>
+          </div>
+        ) : null
       }
     </header>
   )
