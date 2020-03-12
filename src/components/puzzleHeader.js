@@ -68,7 +68,11 @@ const PuzzleHeader = (id) => {
     const isDone = Object.keys(spaces).every(s => spaces[s] !== "FREE");
     if (timer && isDone) {
       setDone(new Date());
-      setLocal([...local, puzzleId]);
+      
+      const recent = [...local];
+      recent.unshift(puzzleId);
+      recent.length = 20;
+      setLocal(recent);
     }
   }, [spaces, setDone]);
 
