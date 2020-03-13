@@ -13,7 +13,7 @@ const PuzzlePage = ( props ) => {
   const { id } = qs;
 
   return (
-    <GameProvider>
+    <GameProvider debug={id === "debug"}>
       <Header id={id}/>
       <Layout>
         <SEO title="Block Race" />

@@ -1,4 +1,4 @@
-import React, {} from "react"
+import React, { useContext, useState } from "react"
 import styled from "styled-components"
 import { GameContext } from "../components/game"
 
@@ -65,42 +65,61 @@ export const pieceColors = {
 }
 
 const Piece = ({ name, className }) => {
+
+    const {
+        activePiece, 
+        setActivePiece, 
+        pieces, 
+        setPieces
+    } = useContext(GameContext)
+
+    const [justHandled, setJustHandled] = useState(false);
+
+    const handleClick = ({type}) => {
+        const thisPiece = pieces[name];
+        if (!thisPiece.placed) {
+            if (type === "touch") {
+                if (activePiece !== name) {
+                    setActivePiece(name)
+                    setJustHandled(true)
+                    setTimeout(() => {
+                        setJustHandled(false)
+                    }, 200)    
+                }
+            } else {
+                if (activePiece === name && !justHandled) {
+                    const newPiece = {...thisPiece};
+                    newPiece.orientation = (thisPiece.orientation+1) % thisPiece.maxOrientation;
+                    setPieces({ item: { [name] : newPiece } })
+                } else {
+                    setActivePiece(name)
+                }
+            }
+        }
+    }
+
     return (
-        <GameContext.Consumer>
-            {({activePiece, setActivePiece, pieces, setPieces}) => (
-                <div
-                    key={pieces[name] || Math.random()}
-                    role="button"
-                    className={className + 
-                        ` ${activePiece === name ? "active" : "inactive"}` +
-                        ` ori${pieces[name].orientation}` +
-                        ` ${name}` +
-                        ` ${pieces[name].placed ? "placed" : ""}`
-                    }
-                    onClick={() => {
-                        const thisPiece = pieces[name];
-                        if (!thisPiece.placed) {
-                            if (activePiece === name) {
-                                const newPiece = {...thisPiece};
-                                newPiece.orientation = (thisPiece.orientation+1) % thisPiece.maxOrientation;
-                                setPieces({ item: { [name] : newPiece } })
-                            } else {
-                                setActivePiece(name);
-                            }
-                        }
-                    }}
-                    onKeyPress={()=>{}}
-                >
-                    {range.map(i => {
-                        const row = [];
-                        range.forEach(j => {
-                            row.push(<div className={`${name}${i}${j}`}></div>)
-                        })
-                        return row;
-                    })}
-                </div>
-            )}
-        </GameContext.Consumer>
+        <div
+            key={pieces[name] || Math.random()}
+            role="button"
+            className={className + 
+                ` ${activePiece === name ? "active" : "inactive"}` +
+                ` ori${pieces[name].orientation}` +
+                ` ${name}` +
+                ` ${pieces[name].placed ? "placed" : ""}`
+            }
+            onClick={()=>{handleClick({type: "click"})}}
+            onTouchStart={()=>{handleClick({type: "touch"})}}
+            onKeyPress={()=>{}}
+        >
+            {range.map(i => {
+                const row = [];
+                range.forEach(j => {
+                    row.push(<div className={`${name}${i}${j}`}></div>)
+                })
+                return row;
+            })}
+        </div>
     )
 }
 

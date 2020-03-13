@@ -22,7 +22,8 @@ const PuzzleHeader = (id) => {
     setRecord,
     setDone,
     setPuzzleId,
-    spaces
+    spaces,
+    debugMsg
   } = useContext(GameContext);
 
   const [title, setTitle] = useState("");
@@ -68,7 +69,7 @@ const PuzzleHeader = (id) => {
     const isDone = Object.keys(spaces).every(s => spaces[s] !== "FREE");
     if (timer && isDone) {
       setDone(new Date());
-      
+
       const recent = [...local];
       recent.unshift(puzzleId);
       recent.length = 20;
@@ -135,7 +136,11 @@ const PuzzleHeader = (id) => {
               textDecoration: `none`,
             }}
           >
-            {`${timer == null ? "Puzzle Mode" : title}`}
+            {`${timer == null ? 
+                "Puzzle Mode" : 
+                id.id === "debug" ? 
+                  debugMsg : 
+                  title}`}
           </Link>
         </h1>
         {puzzleId ? (
