@@ -200,7 +200,6 @@ const H2HHeader = (id) => {
           (updatedChallenge.value.player2.length > 0 && updatedChallenge.value.player2time === 999)) && 
           !updatedChallenge.loading) 
         {
-          console.log("Making an update!", updatedChallenge, trueChallenge)
           updateChallenge(doneSeconds)
         }
       }
@@ -219,7 +218,6 @@ const H2HHeader = (id) => {
         ((updatedChallenge.value && updatedChallenge.value.failed) || updatedChallenge.error)
     ){
       setUpdateRetries(updateRetries+1)
-      console.log("Auto retrying the update!", updateRetries)
       updateChallenge(doneSeconds);
     }
   }, [updatedChallenge.value, updateChallenge.error])
@@ -258,7 +256,6 @@ const H2HHeader = (id) => {
         {initials.length > 0 && !timer ? (
           <RightButton
             onClick={() => {
-              console.log("Clicked")
               if (!generatedChallenge.loading) {
                 startChallenge()
               }

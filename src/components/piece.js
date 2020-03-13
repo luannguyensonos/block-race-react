@@ -74,8 +74,7 @@ const Piece = ({ name, className }) => {
     } = useContext(GameContext)
 
     const [justHandled, setJustHandled] = useState(false);
-
-    const handleClick = ({type}) => {
+    const handleTouchOrClick = ({type}) => {
         const thisPiece = pieces[name];
         if (!thisPiece.placed) {
             if (type === "touch") {
@@ -100,6 +99,7 @@ const Piece = ({ name, className }) => {
 
     return (
         <div
+            id={name}
             key={pieces[name] || Math.random()}
             role="button"
             className={className + 
@@ -108,8 +108,8 @@ const Piece = ({ name, className }) => {
                 ` ${name}` +
                 ` ${pieces[name].placed ? "placed" : ""}`
             }
-            onClick={()=>{handleClick({type: "click"})}}
-            onTouchStart={()=>{handleClick({type: "touch"})}}
+            onClick={()=>{handleTouchOrClick({type: "click"})}}
+            onTouchStart={()=>{handleTouchOrClick({type: "touch"})}}
             onKeyPress={()=>{}}
         >
             {range.map(i => {

@@ -8,12 +8,11 @@ export const GameContext = React.createContext({
     setPieces: (obj) => {},
     setActivePiece: (str) => {},
     setPreview: (obj) => {},
-    setRecord: (int) => {},
     setPuzzleId: (str) => {},
     setTimer: (date) => {},
     setDone: (date) => {},
     calculatePreview: (int) => {},
-    layPiece: (int) => {},
+    layOrLiftPiece: (int, obj) => {},
     spaces: {},
     pieces: {},
     activePiece: "",
@@ -21,7 +20,6 @@ export const GameContext = React.createContext({
     timer: null,
     doneTime: null,
     puzzleId: null,
-    record: false,
     debugMsg: ""
   })
   
@@ -35,7 +33,6 @@ const DICE = [
     [15,15,26,51,62,62],
     [16,16,16,61,61,61]
 ]
-const diceIndex = () => { return Math.floor(Math.random() * 6) }; // 0 to 5
 
 const moves = {
     "four0": (n) => { return [n-1, n, n+1, n+2] },
@@ -114,6 +111,7 @@ export const loadBlockersFromString = (preset) => {
     }, [])
 }
 
+const diceIndex = () => { return Math.floor(Math.random() * 6) }; // 0 to 5
 export const generateBlockers = () => {
     return DICE.reduce((arr, d) => {
         arr.push(d[diceIndex()]);
@@ -126,12 +124,13 @@ const GameProvider = ({children, debug = false}) => {
     const [pieces, setPieces] = useReducer(pieceReducer, initialPieceStates);
     const [activePiece, setActivePiece] = useState(Object.keys(initialPieceStates)[0]);
     const [preview, setPreview] = useState({});
+    const [justCleared, setJustCleared] = useState(false);
     const [timer, setTimer] = useState(null);
     const [doneTime, setDone] = useState(null);
     const [puzzleId, setPuzzleId] = useState("");
-    const [record, setRecord] = useState(0);
-    const [justLaid, setJustLaid] = useState(null);
+    const [justActioned, setJustActioned] = useState(null);
     const [debugMsg, setDebugMsg] = useState("");
+    const [clientRect, setClientRect] = useState(null);
     
     const resetBoard = () => {
       setSpaces({ type: "CLEAR" });
@@ -140,7 +139,6 @@ const GameProvider = ({children, debug = false}) => {
       setPuzzleId(serializedBlockers(blockers));
       setTimer(null);
       setDone(null);
-      setRecord(0);
       setActivePiece(Object.keys(initialPieceStates)[0]);
     }
   
@@ -157,24 +155,27 @@ const GameProvider = ({children, debug = false}) => {
       setDone(null);
     }
 
-    const calculatePreview = (spaceNum) => {
-        if (!activePiece || !pieces[activePiece]) return;
+    const calculatePreview = (spaceNum, apOverride = null) => {
+        if (!activePiece || !pieces[activePiece] || justCleared) return;
 
-        const ori = pieces[activePiece].orientation;
-        const spots = moves[activePiece+ori](spaceNum);
+        const ap = apOverride || activePiece;
+        const ori = pieces[ap].orientation;
+        const spots = moves[ap+ori](spaceNum);
         setPreview({
-            color: spots.every(s => spaces[s] && spaces[s] === "FREE") ?
-                activePiece : false,
-            spaces: spots
+            color: spots.every(s => spaces[s] && spaces[s] === "FREE") || apOverride ?
+                ap : false,
+            spaces: spots,
+            override: apOverride
         });
     }
 
-    const layPiece = (spaceNum = null) => {
+    const layOrLiftPiece = (spaceNum = null, {type = "click"}) => {
         if (preview.color) {
-            setJustLaid(activePiece);
+            if (activePiece === justActioned) return "SKIPPED"
+            setJustActioned(activePiece);
             setTimeout(() => {
-                setJustLaid(null);
-            }, 800);
+                setJustActioned(null);
+            }, 200);
             const oldAP = { [activePiece] : {...pieces[activePiece]} };
             oldAP[activePiece].placed = true;
             setPieces({ item: oldAP });
@@ -188,6 +189,7 @@ const GameProvider = ({children, debug = false}) => {
             const newAP = Object.keys(pieces).find(pk => pk !== activePiece && !pieces[pk].placed);
             setActivePiece(newAP);
             setPreview({});
+            return "LAID";
         } else if (
             spaceNum &&
             spaces[spaceNum] &&
@@ -196,7 +198,11 @@ const GameProvider = ({children, debug = false}) => {
         {
             // Lift the piece
             const pieceToLift = spaces[spaceNum];
-            if (pieceToLift !== justLaid) {
+            if (pieceToLift !== justActioned) {
+                setJustActioned(pieceToLift);
+                setTimeout(() => {
+                    setJustActioned(null);
+                }, 200);
                 setActivePiece(pieceToLift);
 
                 const newPiece = { [pieceToLift] : {...pieces[pieceToLift]} };
@@ -205,38 +211,54 @@ const GameProvider = ({children, debug = false}) => {
 
                 setSpaces({ type: "LIFT", item: pieceToLift });
                 setPreview({});
+                if (type === "touch") {
+                    calculatePreview(spaceNum, pieceToLift);
+                }
+                return "LIFTED"
             } else {
                 setPreview({});
+                return "SKIPPED"
             }
         }
+        return "NONE";
     }
 
-    const handleTouchStart = (e) => {
-        const target = e.touches && e.touches.length > 0 ? e.touches[0].target : null;
-        if (target) {
-            calculatePreview(Number.parseInt(target.id));
-        }
-    }
-
+    const [debounceTouch, setDebounceTouch] = useState(false)
     const handleTouchMove = (e) => {
+        if (debounceTouch) return;
+
+        if (!clientRect) {
+            const corner = document.getElementById("11")
+            if (corner)
+                setClientRect(corner.getBoundingClientRect())
+        }
         const touch = e.touches && e.touches.length > 0 ? e.touches[0] : null;
-        if (touch) {
-            const corner = document.getElementById("11");
-            const clientRect = corner.getBoundingClientRect();
+        if (touch && clientRect) {
             const myI = Math.ceil((touch.clientY - clientRect.top) / clientRect.height);
             const myJ = Math.ceil((touch.clientX - clientRect.left) / clientRect.width);
             const predictedSpaceNum = `${myI}${myJ}`;
-            if (debug)
-                setDebugMsg(`${Math.floor(touch.clientY)} x ${Math.floor(touch.clientX)}`)
-            if (spaces[predictedSpaceNum])
+            if (debug) {
+                setDebugMsg(`${Math.floor(touch.clientY)} x ${Math.floor(clientRect.top)} x ${Math.floor(clientRect.height)}`)
+            }
+            if (spaces[predictedSpaceNum]) {
                 calculatePreview(Number.parseInt(predictedSpaceNum));
+            }
+            
+            setDebounceTouch(true)
+            setTimeout(()=>{
+                setDebounceTouch(false)
+            }, 100)
         }
     }
 
     const handleTouchEnd = (e) => {
-        if (preview.color) {
-            layPiece();
+        if (preview.color && !preview.override) {
+            layOrLiftPiece(null, {type: "touch"});
         } else {
+            setJustCleared(true);
+            setTimeout(() => {
+                setJustCleared(false);
+            }, 200);
             setPreview({});
         }
     }
@@ -259,14 +281,11 @@ const GameProvider = ({children, debug = false}) => {
             setDone,
             puzzleId,
             setPuzzleId,
-            record,
-            setRecord,
             calculatePreview,
-            layPiece,
+            layOrLiftPiece,
             debugMsg
         }}>
             <div
-                onTouchStart={(e) => {if(timer && !doneTime) handleTouchStart(e)}}
                 onTouchMove={(e) => {if(timer && !doneTime) handleTouchMove(e)}}
                 onTouchEnd={(e) => {if(timer && !doneTime) handleTouchEnd(e)}}
             >

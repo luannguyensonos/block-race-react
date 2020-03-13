@@ -197,7 +197,7 @@ const IndexPage = () => {
                           </li>
                         ))}
                       </ul>
-                    ) : "Wow, such empty"
+                    ) : "Wow, such empty :("
                 }
               </div>
             </div>
@@ -230,7 +230,19 @@ const IndexPage = () => {
                     ))}
                   </ul>
                 ) : (
-                  <>
+                  <div
+                    style={{
+                      display: `flex`,
+                      flexDirection: `column`
+                    }}
+                  >
+                    <span
+                      style={{
+                        marginBottom: `3rem`,
+                      }}
+                    >
+                      Nothing to see here.
+                    </span>
                     <MutedButton
                       onClick={() => {
                         reloadData(true)
@@ -238,7 +250,7 @@ const IndexPage = () => {
                     >
                       {`${allRecords.loading ? `Hold up...` : `Oops! Let's try reloading the data`}`}
                     </MutedButton>
-                  </>
+                  </div>
                 )
             }
           </div>

@@ -9,11 +9,33 @@ const Board = ({ className }) => {
         preview, setPreview,
         doneTime,
         calculatePreview,
-        layPiece
+        layOrLiftPiece
     } = useContext(GameContext);
 
+    const [justHandled, setJustHandled] = useState(false);
+    const handleTouchOrClick = (spaceNum, {type}) => {
+        if (!doneTime) {
+            if (type === "touch") {
+                const action = layOrLiftPiece(spaceNum, {type: "touch"})
+                if (action === "LAID") {
+                    setJustHandled(true)
+                    setTimeout(() => {
+                        setJustHandled(false)
+                    }, 200)
+                }
+            } else {
+                if (!justHandled) {
+                    layOrLiftPiece(spaceNum, {type: "click"})
+                }
+            }
+        }
+    }
+
     return (
-        <div className={className}>
+        <div 
+            className={className}
+            onMouseLeave={() => {setPreview({})}}
+        >
             {RANGE.map(i => {
                 const squares = [];
                 RANGE.forEach(j => {
@@ -29,9 +51,16 @@ const Board = ({ className }) => {
                                 ` ${spaces[`${i}${j}`]}` + 
                                 ` ${isPreview ? `${preview.color} ispreview` : ""}`
                             }
-                            onMouseEnter={() => {calculatePreview(spaceNum)}}
-                            onMouseLeave={() => {setPreview({})}}
-                            onClick={() => {if (!doneTime) layPiece(spaceNum)}}
+                            onMouseEnter={() => {
+                                calculatePreview(spaceNum)
+                            }}
+                            onClick={()=>{
+                                handleTouchOrClick(spaceNum, {type: "click"})
+                            }}
+                            onTouchStart={()=>{
+                                calculatePreview(spaceNum)
+                                handleTouchOrClick(spaceNum, {type: "touch"})
+                            }}
                             onKeyPress={()=>{}}
                         >
                         </div>

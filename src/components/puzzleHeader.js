@@ -18,8 +18,6 @@ const PuzzleHeader = (id) => {
     timer,
     doneTime,
     puzzleId,
-    record,
-    setRecord,
     setDone,
     setPuzzleId,
     spaces,
@@ -29,6 +27,7 @@ const PuzzleHeader = (id) => {
   const [title, setTitle] = useState("");
   const [doneSeconds, setDoneSeconds] = useState(0);
   const [initials, setInitials] = useState("");
+  const [record, setRecord] = useState(0);
   const [local, setLocal] = useLocalStorage("recent", []);
 
   const [retrievedRecord, retrieveRecord] = useAsyncFn(async (pid) => {
@@ -146,9 +145,12 @@ const PuzzleHeader = (id) => {
         {puzzleId ? (
           <RightButton
             onClick={() => {
-              timer == null && !local.includes(puzzleId) ?
-                startGame() :
+              if (timer == null && !local.includes(puzzleId)) {
+                startGame()
+              } else {
                 resetBoard()
+                setRecord(0)
+              }
             }}
           >
             {`${timer == null && !local.includes(puzzleId) ? "Start" : "Reset"}`}
