@@ -352,9 +352,6 @@ const GameProvider = ({children, debug = false}) => {
                 onTouchMove={(e) => {
                     if (timer && !doneTime) handleTouchMove(e)
                 }}
-                onTouchEnd={() => {
-                    //if (timer && !doneTime && !touchSpace) liftPiece(touchSpace) 
-                }}
             >
                 {children}
             </div>
