@@ -6,17 +6,21 @@ import { isMobile, isBrowser } from "react-device-detect"
 
 const Board = ({ className }) => {
     const {
+        activePiece,
         spaces,
         preview, setPreview,
-        doneTime,
         calculatePreview,
-        layOrLiftPiece
+        layPiece,
+        liftPiece,
+        touchSpace,
+        setTouchSpace,
+        turnPiece,
+        dislodged,
+        setDislodged
     } = useContext(GameContext);
 
-    const handleTouchOrClick = (spaceNum) => {
-        if (!doneTime) {
-            layOrLiftPiece(spaceNum)
-        }
+    const isPiece = (number) => {
+        return spaces[number] !== "FREE" && spaces[number] !== "BLOCK"
     }
 
     return (
@@ -40,22 +44,77 @@ const Board = ({ className }) => {
                                 ` ${isPreview ? `${preview.color} ispreview` : ""}`
                             }
                             onMouseEnter={() => {
-                                if (
-                                    spaces[`${i}${j}`] === "FREE" ||
-                                    spaces[`${i}${j}`] === "BLOCK"
-                                )
+                                if (isMobile) return;
+                                if (!isPiece(spaceNum))
                                     calculatePreview(spaceNum)
                                 else
                                     setPreview({})
                             }}
                             onClick={()=>{
                                 if (isMobile) return;
-                                handleTouchOrClick(spaceNum)
+                                if (isPiece(spaceNum)) {
+                                    liftPiece(spaceNum)
+                                    setPreview({})
+                                }
+                                else if (preview.color)
+                                    layPiece(spaceNum)
+                            }}
+                            onTouchEnd={(e)=>{
+                                if (isBrowser) return;
+                                if (touchSpace) {
+                                    if (!isPiece(touchSpace) && preview.color)
+                                        // Dragged into a valid spot
+                                        layPiece(touchSpace)
+                                    else
+                                        // Dragged into invalid spot
+                                        setPreview({})
+                                } else {
+                                    if (preview.spaces && 
+                                        preview.spaces.includes(spaceNum) &&
+                                        dislodged
+                                    ) {
+                                        // Again this is the dislodged use case
+                                        const newPiece = turnPiece(activePiece)
+                                        calculatePreview(spaceNum, {
+                                            piece: newPiece
+                                        })
+                                    } else {
+                                        if (preview.color) {
+                                            // "Click" into a valid spot
+                                            const lay = layPiece(spaceNum)
+    
+                                            if (lay === "SKIPPED") {
+                                                // "Click" onto existing piece
+                                                // Dislodge the piece and turn it
+                                                setDislodged(true)
+                                                const newPiece = turnPiece(activePiece)
+                                                calculatePreview(spaceNum, {
+                                                    piece: newPiece
+                                                })
+                                            }
+                                        } else {
+                                            // "Click" into invalid spot
+                                            liftPiece(spaceNum)
+                                            setPreview({})
+                                        }
+                                    }
+                                }
                             }}
                             onTouchStart={()=>{
                                 if (isBrowser) return;
-                                calculatePreview(spaceNum)
-                                handleTouchOrClick(spaceNum)
+                                setTouchSpace(null)
+                                if (!dislodged) {
+                                    if (isPiece(spaceNum)) {
+                                        // Getting ready to drag or turn
+                                        const lifted = liftPiece(spaceNum)
+                                        calculatePreview(spaceNum, {
+                                            activePiece: lifted
+                                        })
+                                    }
+                                    else
+                                        // Setting up a "click-lay" into a free spot
+                                        calculatePreview(spaceNum)
+                                }
                             }}
                             onKeyPress={()=>{}}
                         >

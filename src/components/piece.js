@@ -71,16 +71,24 @@ const Piece = ({ name, className }) => {
         activePiece, 
         setActivePiece, 
         pieces, 
-        setPieces
+        turnPiece,
+        touchSpace,
+        setTouchSpace,
+        layPiece,
+        preview,
+        setPreview
     } = useContext(GameContext)
 
-    const handleTouchOrClick = ({noTurn}) => {
+    const [justSet, setJustSet] = useState(null)
+    const setOrTurn = ({set, turn}) => {
         const thisPiece = pieces[name];
-        if ((activePiece === name || thisPiece.placed) && !noTurn) {
-            const newPiece = {...thisPiece};
-            newPiece.orientation = (thisPiece.orientation+1) % thisPiece.maxOrientation;
-            setPieces({ item: { [name] : newPiece } })
-        } else if (!thisPiece.placed) {
+        if (turn && justSet !== activePiece && (activePiece === name || thisPiece.placed)) {
+            turnPiece(name);
+        } else if (set && activePiece !== name && !thisPiece.placed) {
+            setJustSet(name);
+            setTimeout(() => {
+                setJustSet(null);
+            }, 200);
             setActivePiece(name)
         }
     }
@@ -98,15 +106,30 @@ const Piece = ({ name, className }) => {
             }
             onClick={()=>{
                 if (isMobile) return;
-                handleTouchOrClick({})
+                setOrTurn({
+                    set: true,
+                    turn: true
+                })
             }}
             onTouchEnd={()=>{
                 if (isBrowser) return;
-                handleTouchOrClick({})
+                if (!touchSpace)
+                    setOrTurn({
+                        set: true,
+                        turn: true
+                    })
+                else if (preview.color)
+                    layPiece(touchSpace)
+                else
+                    setPreview({})
             }}
             onTouchStart={()=>{
                 if (isBrowser) return;
-                handleTouchOrClick({noTurn: true})
+                setTouchSpace(null)
+                setOrTurn({
+                    set: true,
+                    turn: false
+                })
             }}
             onKeyPress={()=>{}}
         >
