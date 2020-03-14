@@ -16,7 +16,7 @@ const PuzzlePage = ( props ) => {
     <GameProvider debug={id === "debug"}>
       <Header id={id}/>
       <Layout>
-        <SEO title="Block Race" />
+        <SEO title="Play this Block Race puzzle with me!" />
         <Board/>
         <Tray/>
       </Layout>

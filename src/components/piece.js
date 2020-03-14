@@ -76,7 +76,9 @@ const Piece = ({ name, className }) => {
         setTouchSpace,
         layPiece,
         preview,
-        setPreview
+        dislodged,
+        setDislodged,
+        handleClickEnding
     } = useContext(GameContext)
 
     const [justSet, setJustSet] = useState(null)
@@ -111,25 +113,35 @@ const Piece = ({ name, className }) => {
                     turn: true
                 })
             }}
-            onTouchEnd={()=>{
-                if (isBrowser) return;
-                if (!touchSpace)
-                    setOrTurn({
-                        set: true,
-                        turn: true
-                    })
-                else if (preview.color)
-                    layPiece(touchSpace)
-                else
-                    setPreview({})
-            }}
             onTouchStart={()=>{
                 if (isBrowser) return;
+
+                // If a piece on the board is in a dislodged state
+                if (dislodged) {
+                    handleClickEnding(false)
+                }
+
+                // Setting up a click or a drag
                 setTouchSpace(null)
                 setOrTurn({
                     set: true,
                     turn: false
                 })
+            }}
+            onTouchEnd={()=>{
+                if (isBrowser) return;
+                if (!touchSpace)
+                    // They clicked on the piece
+                    setOrTurn({
+                        set: true,
+                        turn: true
+                    })
+                else if (preview.color)
+                    // They dragged to a valid spot
+                    layPiece(touchSpace)
+                else
+                    // They dragged to an invalid spot
+                    setDislodged(true)
             }}
             onKeyPress={()=>{}}
         >

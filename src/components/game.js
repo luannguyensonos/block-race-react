@@ -17,6 +17,7 @@ export const GameContext = React.createContext({
     liftPiece: (int) => {},
     setTouchSpace: (str) => {},
     setDislodged: (bool) => {},
+    handleClickEnding: (bool, int) => {},
     spaces: {},
     pieces: {},
     activePiece: "",
@@ -104,6 +105,10 @@ const pieceReducer = (state, action) => {
     }
 }
 
+const isTurnable = (piece) => {
+    return initialPieceStates[piece].maxOrientation > 1
+}
+
 export const serializedBlockers = (bArr) => {
     return bArr.sort().reduce((str, b) => {
         return str + b;
@@ -145,14 +150,14 @@ const GameProvider = ({children, debug = false}) => {
     }, {});
 
     const resetBoard = () => {
-      setSpaces({ type: "CLEAR" });
-      setPieces({ type: "RESET" });
-      const blockers = generateBlockers();
-      setPuzzleId(serializedBlockers(blockers));
-      setTimer(null);
-      setDone(null);
-      setActivePiece(Object.keys(initialPieceStates)[0]);
-      setPreview({});
+        const blockers = generateBlockers();
+        setPuzzleId(serializedBlockers(blockers));
+        setSpaces({ type: "CLEAR" });
+        setPieces({ type: "RESET" });
+        setTimer(null);
+        setDone(null);
+        setActivePiece(Object.keys(initialPieceStates)[0]);
+        setPreview({});
     }
   
     const startGame = () => {
@@ -168,13 +173,14 @@ const GameProvider = ({children, debug = false}) => {
       setDone(null);
     }
 
-    const calculatePreview = (spaceNum, overrides = {}) => {
-        if (!activePiece || !pieces[activePiece]) return;
+    const calculatePreview = (spaceNum = null, overrides = {}) => {
+        if (!activePiece || !pieces[activePiece] || !spaceNum) return;
 
         const ap = overrides.activePiece || activePiece;
         const thisPiece = overrides.piece || pieces[ap];
         const ori = thisPiece.orientation;
         let spots = moves[ap+ori](spaceNum);
+        
         // Logic here to bump the preview back into the board
         const adjs = spots.reduce((obj, s) => {
             const fst = Math.floor(s/10);
@@ -215,10 +221,14 @@ const GameProvider = ({children, debug = false}) => {
         return thisPreview
     }
 
-    const layPiece = (spaceNum) => {
-        const thisPreview = preview.spaces ? preview : calculatePreview(spaceNum)
+    const layPiece = (spaceNum = null, force = false) => {
+        const thisPreview = preview.spaces ? 
+            preview : 
+            spaceNum ?
+                calculatePreview(spaceNum) :
+                {}
         if (thisPreview.color) {
-            if (activePiece === justActioned) return "SKIPPED"
+            if (activePiece === justActioned && !force) return "SKIPPED"
 
             setJustActioned(activePiece);
             setTimeout(() => {
@@ -319,6 +329,50 @@ const GameProvider = ({children, debug = false}) => {
             setDebounceTouch(false)
         }, 100)
     }
+
+    const handleClickEnding = (isPreview, spaceNum = null) => {
+        if (dislodged) {
+            if (isPreview)
+            {
+                // Clicking on the actual dislodged piece
+                const newPiece = turnPiece(activePiece)
+                calculatePreview(spaceNum, {
+                    piece: newPiece
+                })
+            } else if (preview.color) {
+                // Clicking elsewhere, but piece is in valid place
+                layPiece(spaceNum)
+            } else {
+                // Clicking elsewhere and piece is invalid
+                setPreview({})
+            }
+        } else {
+            // Handle the end of a "click"
+            // The preview object *should* exist
+            if (preview.color) {
+                // "Click" into a valid spot
+                const lay = layPiece(spaceNum)
+
+                if (lay === "SKIPPED") {
+                    // "Click" onto existing piece
+                    // Dislodge the piece and turn it
+                    if (isTurnable(activePiece)) {
+                        setDislodged(true)
+                        const newPiece = turnPiece(activePiece)
+                        calculatePreview(spaceNum, {
+                            piece: newPiece
+                        })
+                    } else {
+                        // Non turnable piece, force it back down
+                        layPiece(spaceNum, true)
+                    }
+                }
+            } else {
+                // "Click" into invalid spot
+                setDislodged(true)
+            }
+        }
+    }
   
     return (
         <GameContext.Provider value={{
@@ -346,7 +400,8 @@ const GameProvider = ({children, debug = false}) => {
             touchSpace,
             setTouchSpace,
             dislodged,
-            setDislodged
+            setDislodged,
+            handleClickEnding
         }}>
             <div
                 onTouchMove={(e) => {

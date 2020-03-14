@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react"
+import React, {useContext} from "react"
 import styled from "styled-components"
 import { GameContext, RANGE } from "../components/game"
 import { pieceColors } from "../components/piece"
@@ -14,19 +14,24 @@ const Board = ({ className }) => {
         liftPiece,
         touchSpace,
         setTouchSpace,
-        turnPiece,
         dislodged,
-        setDislodged
+        setDislodged,
+        handleClickEnding
     } = useContext(GameContext);
 
     const isPiece = (number) => {
+        // These should use some global const/enum, but oh well
         return spaces[number] !== "FREE" && spaces[number] !== "BLOCK"
     }
 
     return (
         <div 
             className={className}
-            onMouseLeave={() => {setPreview({})}}
+            onMouseLeave={() => {
+                if (dislodged) {
+                    handleClickEnding(false)
+                }
+            }}
         >
             {RANGE.map(i => {
                 const squares = [];
@@ -36,19 +41,19 @@ const Board = ({ className }) => {
                     squares.push(
                         <div
                             role="button"
-                            id={`${i}${j}`} 
-                            key={`${i}${j}`}
+                            id={spaceNum} 
+                            key={spaceNum}
                             className={
                                 className + 
-                                ` ${spaces[`${i}${j}`]}` + 
-                                ` ${isPreview ? `${preview.color} ispreview` : ""}`
+                                ` ${spaces[spaceNum]}` + 
+                                ` ${isPreview ? 
+                                        `${spaces[spaceNum] !== "FREE" ?
+                                            preview.color : 
+                                            `${activePiece} ${preview.color}Glow`} ispreview`: ""}`
                             }
                             onMouseEnter={() => {
                                 if (isMobile) return;
-                                if (!isPiece(spaceNum))
-                                    calculatePreview(spaceNum)
-                                else
-                                    setPreview({})
+                                calculatePreview(spaceNum)
                             }}
                             onClick={()=>{
                                 if (isMobile) return;
@@ -59,53 +64,16 @@ const Board = ({ className }) => {
                                 else if (preview.color)
                                     layPiece(spaceNum)
                             }}
-                            onTouchEnd={(e)=>{
-                                if (isBrowser) return;
-                                if (touchSpace) {
-                                    if (!isPiece(touchSpace) && preview.color)
-                                        // Dragged into a valid spot
-                                        layPiece(touchSpace)
-                                    else
-                                        // Dragged into invalid spot
-                                        setPreview({})
-                                } else {
-                                    if (preview.spaces && 
-                                        preview.spaces.includes(spaceNum) &&
-                                        dislodged
-                                    ) {
-                                        // Again this is the dislodged use case
-                                        const newPiece = turnPiece(activePiece)
-                                        calculatePreview(spaceNum, {
-                                            piece: newPiece
-                                        })
-                                    } else {
-                                        if (preview.color) {
-                                            // "Click" into a valid spot
-                                            const lay = layPiece(spaceNum)
-    
-                                            if (lay === "SKIPPED") {
-                                                // "Click" onto existing piece
-                                                // Dislodge the piece and turn it
-                                                setDislodged(true)
-                                                const newPiece = turnPiece(activePiece)
-                                                calculatePreview(spaceNum, {
-                                                    piece: newPiece
-                                                })
-                                            }
-                                        } else {
-                                            // "Click" into invalid spot
-                                            liftPiece(spaceNum)
-                                            setPreview({})
-                                        }
-                                    }
-                                }
-                            }}
                             onTouchStart={()=>{
                                 if (isBrowser) return;
+
+                                // Resetting touchSpace will let us differentiate between
+                                // a "click" and a drag in onTouchEnd
                                 setTouchSpace(null)
+
                                 if (!dislodged) {
                                     if (isPiece(spaceNum)) {
-                                        // Getting ready to drag or turn
+                                        // Getting ready to drag or dislodge
                                         const lifted = liftPiece(spaceNum)
                                         calculatePreview(spaceNum, {
                                             activePiece: lifted
@@ -114,6 +82,20 @@ const Board = ({ className }) => {
                                     else
                                         // Setting up a "click-lay" into a free spot
                                         calculatePreview(spaceNum)
+                                }
+                            }}
+                            onTouchEnd={(e)=>{
+                                if (isBrowser) return;
+                                if (touchSpace) {
+                                    // Denotes a drag action
+                                    if (!isPiece(touchSpace) && preview.color)
+                                        // Dragged into a valid spot
+                                        layPiece(touchSpace)
+                                    else
+                                        // Dragged into invalid spot
+                                        setDislodged(true)
+                                } else {
+                                    handleClickEnding(isPreview, spaceNum)
                                 }
                             }}
                             onKeyPress={()=>{}}
@@ -188,9 +170,9 @@ const StyledBoard = styled(Board)`
         }
 
         &.ispreview {
-            opacity: .75;
+            opacity: .7;
             border-radius: 25%;
-            box-shadow: 0px 0px 0.1rem 0.1rem #AAA;
+            box-shadow: 0px 0px 0.1rem 0.1rem #BBB;
 
             &.BLOCK {
                 border-radius: 50%;
@@ -198,10 +180,15 @@ const StyledBoard = styled(Board)`
         }
 
         &.false {
-            background: #520101;
+            background: #4A0000;
+        }
+        
+        &.false,
+        &.falseGlow {
             box-shadow: 0px 0px 0.2rem 0.2rem red;
             cursor: not-allowed;
         }
+
     }
 `
 

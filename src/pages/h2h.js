@@ -16,7 +16,7 @@ const H2HPage = ( props ) => {
     <GameProvider>
       <Header id={id}/>
       <Layout>
-        <SEO title="Block Race" />
+        <SEO title="You've been challenged to a Block Race!" />
         <Board/>
         <Tray/>
       </Layout>

@@ -3,6 +3,7 @@ import React, {useContext, useState, useEffect} from "react"
 import { useAsyncFn, useEffectOnce } from 'react-use'
 import Button, { LeftButton, RightButton } from "../components/button"
 import { formatSeconds } from "../pages/index"
+import PacmanLoader from "react-spinners/PacmanLoader"
 import { 
   GameContext,
 	generateBlockers,
@@ -292,27 +293,38 @@ const H2HHeader = (id) => {
               </LeftButton>
             </a>
           </div>
-        ) : !timer && challengeState < 3 ?
+        ) : !timer && !retrievedChallenge.loading && challengeState < 3 ?
         (
           <div
             style={{
               margin: `0 auto`,
               maxWidth: 540,
-              padding: `0.75rem 0.75rem 1rem 0.75rem`,
+              padding: `0.75rem 0.75rem 2rem 0.75rem`,
               display: `flex`,
-              flexDirection: `row`
+              flexDirection: `column`,
+              textAlign: `center`
             }}
           >
               <h1
                 style={{
-                  margin: `0.5rem 0`,
+                  margin: `0.25rem auto`,
                   fontSize: `1rem`
                 }}
               >
                 { 
                   challengeState <= 1 ? 
-                    `Player 1, enter initials to start!` :
+                    `Player 1, are you ready?` :
                     `Player 2, you've been challenged!` 
+                }
+              </h1>
+              <h1
+                style={{
+                  margin: `0.25rem auto 0.5rem auto`,
+                  fontSize: `1rem`
+                }}
+              >
+                { 
+                  `Enter your initials to begin:` 
                 }
               </h1>
               <input 
@@ -322,10 +334,21 @@ const H2HHeader = (id) => {
                 size={5}
                 onChange={e => setInitials(e.target.value)}
                 style={{
-                  margin: `0 auto 0 1rem`,
+                  margin: `0 auto`,
                 }}
               ></input>
             </div>
+        ) : !timer && retrievedChallenge.loading ?
+        (
+          <div
+            style={{
+              margin: `0 auto`,
+              maxWidth: 540,
+              padding: `0.75rem 0.75rem 1rem 0.75rem`,
+            }}
+          >
+            <PacmanLoader color="white" size={10}/>
+          </div>
         ) : null
       }
       {(doneTime || challengeState >= 3) && challengeId ?
@@ -346,7 +369,7 @@ const H2HHeader = (id) => {
               }}
             >
               { challengeState < 3 ? 
-                `Send to a friend or enemy:` : 
+                `Important! Send to a friend or enemy:` : 
                 `Player ${trueChallenge.player1time < trueChallenge.player2time ? "1" : "2"} prevailed!` }
             </h1>
             {challengeState < 3 ? 

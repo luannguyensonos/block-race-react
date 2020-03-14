@@ -157,6 +157,45 @@ const PuzzleHeader = (id) => {
           </RightButton>
         ) : null}
       </div>
+      {!timer && !doneTime && puzzleId ?
+        (
+          <div
+            style={{
+              margin: `0 auto 1rem auto`,
+              maxWidth: 540,
+              padding: `2rem 0.75rem`,
+              display: `flex`,
+              flexDirection: `column`,
+              textAlign: `center`
+            }}
+          >
+            <h1
+              style={{
+                margin: `0.5rem auto`,
+                fontSize: `1rem`
+              }}
+            >
+              Share this link to play with a friend:
+            </h1>
+            <h1
+              style={{
+                margin: `auto auto`,
+                fontSize: `0.7rem`
+              }}
+            >
+              <Link
+                to={`/puzzle/?id=${puzzleId}`}
+                style={{
+                  color: `white`,
+                  textDecoration: `none`,
+                }}
+              >
+                {`https://block-race.netlify.com/puzzle/?id=${puzzleId}`}
+              </Link>
+            </h1>
+          </div>
+        ) : null
+      }
       {timer && doneTime && doneSeconds && puzzleId && record > 0 ?
         (
           <div
