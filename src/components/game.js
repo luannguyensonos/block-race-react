@@ -1,5 +1,6 @@
 import React, { useReducer, useState } from "react"
 import { initialPieceStates } from "../components/piece"
+import { isMobile } from "react-device-detect"
 
 export const GameContext = React.createContext({
     resetBoard: () => {},
@@ -169,7 +170,7 @@ const GameProvider = ({children, debug = false}) => {
         });
     }
 
-    const layOrLiftPiece = (spaceNum = null, {type = "click"}) => {
+    const layOrLiftPiece = (spaceNum = null) => {
         if (preview.color) {
             if (activePiece === justActioned) return "SKIPPED"
             setJustActioned(activePiece);
@@ -211,7 +212,7 @@ const GameProvider = ({children, debug = false}) => {
 
                 setSpaces({ type: "LIFT", item: pieceToLift });
                 setPreview({});
-                if (type === "touch") {
+                if (isMobile) {
                     calculatePreview(spaceNum, pieceToLift);
                 }
                 return "LIFTED"
@@ -242,6 +243,12 @@ const GameProvider = ({children, debug = false}) => {
             }
             if (spaces[predictedSpaceNum]) {
                 calculatePreview(Number.parseInt(predictedSpaceNum));
+            } else {
+                setJustCleared(true);
+                setTimeout(() => {
+                    setJustCleared(false);
+                }, 200);
+                setPreview({});
             }
             
             setDebounceTouch(true)
@@ -253,7 +260,7 @@ const GameProvider = ({children, debug = false}) => {
 
     const handleTouchEnd = (e) => {
         if (preview.color && !preview.override) {
-            layOrLiftPiece(null, {type: "touch"});
+            layOrLiftPiece(null);
         } else {
             setJustCleared(true);
             setTimeout(() => {

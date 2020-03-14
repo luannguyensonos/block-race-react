@@ -2,6 +2,7 @@ import React, {useContext, useState} from "react"
 import styled from "styled-components"
 import { GameContext, RANGE } from "../components/game"
 import { pieceColors } from "../components/piece"
+import { isMobile, isBrowser } from "react-device-detect"
 
 const Board = ({ className }) => {
     const {
@@ -12,22 +13,9 @@ const Board = ({ className }) => {
         layOrLiftPiece
     } = useContext(GameContext);
 
-    const [justHandled, setJustHandled] = useState(false);
-    const handleTouchOrClick = (spaceNum, {type}) => {
+    const handleTouchOrClick = (spaceNum) => {
         if (!doneTime) {
-            if (type === "touch") {
-                const action = layOrLiftPiece(spaceNum, {type: "touch"})
-                if (action === "LAID") {
-                    setJustHandled(true)
-                    setTimeout(() => {
-                        setJustHandled(false)
-                    }, 200)
-                }
-            } else {
-                if (!justHandled) {
-                    layOrLiftPiece(spaceNum, {type: "click"})
-                }
-            }
+            layOrLiftPiece(spaceNum)
         }
     }
 
@@ -52,14 +40,22 @@ const Board = ({ className }) => {
                                 ` ${isPreview ? `${preview.color} ispreview` : ""}`
                             }
                             onMouseEnter={() => {
-                                calculatePreview(spaceNum)
+                                if (
+                                    spaces[`${i}${j}`] === "FREE" ||
+                                    spaces[`${i}${j}`] === "BLOCK"
+                                )
+                                    calculatePreview(spaceNum)
+                                else
+                                    setPreview({})
                             }}
                             onClick={()=>{
-                                handleTouchOrClick(spaceNum, {type: "click"})
+                                if (isMobile) return;
+                                handleTouchOrClick(spaceNum)
                             }}
                             onTouchStart={()=>{
+                                if (isBrowser) return;
                                 calculatePreview(spaceNum)
-                                handleTouchOrClick(spaceNum, {type: "touch"})
+                                handleTouchOrClick(spaceNum)
                             }}
                             onKeyPress={()=>{}}
                         >
@@ -77,6 +73,7 @@ const StyledBoard = styled(Board)`
     grid-template-columns: repeat(6, 1fr);
     background: black;
     padding: 0.5rem;
+    touch-action: none;
 
     & > div {
         background: #000;
@@ -84,6 +81,7 @@ const StyledBoard = styled(Board)`
         height: calc((100vw - 4rem) / 6);
         max-height: 78px;
         border-radius: 10%;
+        touch-action: none;
 
         &.BLOCK {
             background: #ffdd99;

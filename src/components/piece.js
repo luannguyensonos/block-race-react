@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react"
 import styled from "styled-components"
 import { GameContext } from "../components/game"
+import { isMobile, isBrowser } from "react-device-detect"
 
 const range = [1,2,3,4];
 
@@ -73,27 +74,14 @@ const Piece = ({ name, className }) => {
         setPieces
     } = useContext(GameContext)
 
-    const [justHandled, setJustHandled] = useState(false);
-    const handleTouchOrClick = ({type}) => {
+    const handleTouchOrClick = ({noTurn}) => {
         const thisPiece = pieces[name];
-        if (!thisPiece.placed) {
-            if (type === "touch") {
-                if (activePiece !== name) {
-                    setActivePiece(name)
-                    setJustHandled(true)
-                    setTimeout(() => {
-                        setJustHandled(false)
-                    }, 200)    
-                }
-            } else {
-                if (activePiece === name && !justHandled) {
-                    const newPiece = {...thisPiece};
-                    newPiece.orientation = (thisPiece.orientation+1) % thisPiece.maxOrientation;
-                    setPieces({ item: { [name] : newPiece } })
-                } else {
-                    setActivePiece(name)
-                }
-            }
+        if ((activePiece === name || thisPiece.placed) && !noTurn) {
+            const newPiece = {...thisPiece};
+            newPiece.orientation = (thisPiece.orientation+1) % thisPiece.maxOrientation;
+            setPieces({ item: { [name] : newPiece } })
+        } else if (!thisPiece.placed) {
+            setActivePiece(name)
         }
     }
 
@@ -108,8 +96,18 @@ const Piece = ({ name, className }) => {
                 ` ${name}` +
                 ` ${pieces[name].placed ? "placed" : ""}`
             }
-            onClick={()=>{handleTouchOrClick({type: "click"})}}
-            onTouchStart={()=>{handleTouchOrClick({type: "touch"})}}
+            onClick={()=>{
+                if (isMobile) return;
+                handleTouchOrClick({})
+            }}
+            onTouchEnd={()=>{
+                if (isBrowser) return;
+                handleTouchOrClick({})
+            }}
+            onTouchStart={()=>{
+                if (isBrowser) return;
+                handleTouchOrClick({noTurn: true})
+            }}
             onKeyPress={()=>{}}
         >
             {range.map(i => {
