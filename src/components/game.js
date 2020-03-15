@@ -16,7 +16,7 @@ export const GameContext = React.createContext({
     layPiece: (int, obj) => {},
     liftPiece: (int) => {},
     setTouchSpace: (str) => {},
-    setDislodged: (bool) => {},
+    setDislodged: (str) => {},
     handleClickEnding: (bool, int) => {},
     spaces: {},
     pieces: {},
@@ -105,10 +105,6 @@ const pieceReducer = (state, action) => {
     }
 }
 
-const isTurnable = (piece) => {
-    return initialPieceStates[piece].maxOrientation > 1
-}
-
 export const serializedBlockers = (bArr) => {
     return bArr.sort().reduce((str, b) => {
         return str + b;
@@ -141,10 +137,10 @@ const GameProvider = ({children, debug = false}) => {
     const [debugMsg, setDebugMsg] = useState("");
     const [clientRect, setClientRect] = useState(null);
     const [touchSpace, setTouchSpace] = useState(null);
-    const [dislodged, setDislodged] = useState(false)
+    const [dislodged, setDislodged] = useState(null)
     const [preview, setPreview] = useReducer((prev, curr) => {
         if (Object.keys(curr).length === 0 && curr.constructor === Object) {
-            setDislodged(false)
+            setDislodged(null)
         }
         return curr
     }, {});
@@ -158,6 +154,7 @@ const GameProvider = ({children, debug = false}) => {
         setDone(null);
         setActivePiece(Object.keys(initialPieceStates)[0]);
         setPreview({});
+        setDislodged(null);
     }
   
     const startGame = () => {
@@ -173,8 +170,9 @@ const GameProvider = ({children, debug = false}) => {
       setDone(null);
     }
 
-    const calculatePreview = (spaceNum = null, overrides = {}) => {
+    const calculatePreview = (spaceNum = preview.spaceNum, overrides = {}) => {
         if (!activePiece || !pieces[activePiece] || !spaceNum) return;
+
 
         const ap = overrides.activePiece || activePiece;
         const thisPiece = overrides.piece || pieces[ap];
@@ -211,11 +209,10 @@ const GameProvider = ({children, debug = false}) => {
         }
         const thisPreview = {
             color: 
-                spots.every(s => spaces[s] && spaces[s] === "FREE") || 
-                    overrides.activePiece ?
-                        ap : false,
+                spots.every(s => spaces[s] && (spaces[s] === "FREE" || spaces[s] === ap)) ? ap : false,
             spaces: spots,
-            overrides
+            overrides,
+            spaceNum
         }
         setPreview(thisPreview)
         return thisPreview
@@ -235,45 +232,54 @@ const GameProvider = ({children, debug = false}) => {
             setJustActioned(activePiece);
             setTimeout(() => {
                 setJustActioned(null);
-            }, 200);
+            }, 100);
             const oldAP = { [activePiece] : {...pieces[activePiece]} };
             oldAP[activePiece].placed = true;
+            oldAP[activePiece].spaceNum = spaceNum || thisPreview.spaceNum;
             setPieces({ item: oldAP });
 
+            // make sure we don't overwrite any blockers
+            let blockerFound = false;
             const newSpaces = thisPreview.spaces.reduce((obj, s) => {
+                if (spaces[s] === "BLOCK") blockerFound = true;
                 obj[s] = activePiece;
                 return obj;
             }, {});
-            setSpaces({ item: newSpaces });
 
-            const newAP = Object.keys(pieces).find(pk => pk !== activePiece && !pieces[pk].placed);
-            setActivePiece(newAP);
+            if (!blockerFound) {
+                setSpaces({ item: newSpaces });
+                const newAP = Object.keys(pieces).find(pk => pk !== activePiece && !pieces[pk].placed);
+                setActivePiece(newAP);
+            }
             setPreview({});
         }
     }
 
-    const liftPiece = (spaceNum) => {
+    const liftPiece = (spaceNum, overrides = {}) => {
         if (
-            spaceNum &&
+            (overrides.name && overrides.piece) || 
+            (spaceNum &&
             spaces[spaceNum] &&
             spaces[spaceNum] !== "FREE" &&
-            spaces[spaceNum] !== "BLOCK")
+            spaces[spaceNum] !== "BLOCK"))
         {
             // Lift the piece
-            const pieceToLift = spaces[spaceNum];
+            const pieceToLift = overrides.name || spaces[spaceNum];
             if (pieceToLift !== justActioned) {
                 setJustActioned(pieceToLift);
                 setTimeout(() => {
                     setJustActioned(null);
-                }, 200);
+                }, 100);
                 setActivePiece(pieceToLift);
 
-                const newPiece = { [pieceToLift] : {...pieces[pieceToLift]} };
+                const oldPiece = overrides.piece ? {...overrides.piece} : {...pieces[pieceToLift]}
+
+                const newPiece = { [pieceToLift] : oldPiece };
                 newPiece[pieceToLift].placed = false;
                 setPieces({ item: newPiece });
 
                 setSpaces({ type: "LIFT", item: pieceToLift });
-                setPreview({});
+                if (!overrides.retainPreview) setPreview({});
                 return pieceToLift
             } else {
                 setPreview({});
@@ -364,26 +370,36 @@ const GameProvider = ({children, debug = false}) => {
                 // "Click" into a valid spot
                 const lay = layPiece(spaceNum)
 
+                // // This supports the "dislodge" functionality
+                // if (lay === "SKIPPED") {
+                //     // "Click" onto existing piece
+                //     // Dislodge the piece and turn it
+                //     if (isTurnable(activePiece)) {
+                //         setDislodged(activePiece)
+                //         const newPiece = turnPiece(activePiece)
+                //         calculatePreview(spaceNum, {
+                //             piece: newPiece
+                //         })
+                //     } else {
+                //         // Non turnable piece, force it back down
+                //         layPiece(spaceNum, {force: true})
+                //     }
+                // }
+
+                // This is for the "click to remove" feature
                 if (lay === "SKIPPED") {
-                    // "Click" onto existing piece
-                    // Dislodge the piece and turn it
-                    if (isTurnable(activePiece)) {
-                        setDislodged(true)
-                        const newPiece = turnPiece(activePiece)
-                        calculatePreview(spaceNum, {
-                            piece: newPiece
-                        })
-                    } else {
-                        // Non turnable piece, force it back down
-                        layPiece(spaceNum, {force: true})
-                    }
+                    setPreview({})
                 }
             } else if (touchSpace || spaceNum) {
                 // Two cases
-                // Either tried to "click" a piece from the tray into the board
-                // Or dragged a piece from the board off
-                if (isPreview) setDislodged(true)
-                else setPreview({})
+                // 1) Either tried to "click" a piece from the tray into the board,
+                //    in which case we should pace it onto the board in a dislodged state
+                // 2) Or dragged a piece from the board off,
+                //    in which case we should just remove it
+                if (isPreview) setDislodged(activePiece)
+                else {
+                    setPreview({})
+                }
             } else {
                 setPreview({})
             }

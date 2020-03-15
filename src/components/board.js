@@ -28,6 +28,7 @@ const Board = ({ className }) => {
         <div 
             className={className}
             onMouseLeave={() => {
+                if (isMobile) return;
                 if (dislodged) {
                     handleClickEnding(false)
                 }
@@ -73,7 +74,7 @@ const Board = ({ className }) => {
 
                                 if (!dislodged) {
                                     if (isPiece(spaceNum)) {
-                                        // Getting ready to drag or dislodge
+                                        // Getting ready to drag
                                         const lifted = liftPiece(spaceNum)
                                         calculatePreview(spaceNum, {
                                             activePiece: lifted
@@ -93,7 +94,7 @@ const Board = ({ className }) => {
                                         layPiece(touchSpace)
                                     else
                                         // Dragged into invalid spot
-                                        setDislodged(true)
+                                        setDislodged(activePiece)
                                 } else {
                                     // Two cases:
                                     // 1) Either you clicked onto the board
