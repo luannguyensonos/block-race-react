@@ -13,7 +13,7 @@ export const GameContext = React.createContext({
     setTimer: (date) => {},
     setDone: (date) => {},
     calculatePreview: (int) => {},
-    layPiece: (int) => {},
+    layPiece: (int, obj) => {},
     liftPiece: (int) => {},
     setTouchSpace: (str) => {},
     setDislodged: (bool) => {},
@@ -180,7 +180,7 @@ const GameProvider = ({children, debug = false}) => {
         const thisPiece = overrides.piece || pieces[ap];
         const ori = thisPiece.orientation;
         let spots = moves[ap+ori](spaceNum);
-        
+
         // Logic here to bump the preview back into the board
         const adjs = spots.reduce((obj, s) => {
             const fst = Math.floor(s/10);
@@ -221,14 +221,16 @@ const GameProvider = ({children, debug = false}) => {
         return thisPreview
     }
 
-    const layPiece = (spaceNum = null, force = false) => {
-        const thisPreview = preview.spaces ? 
-            preview : 
-            spaceNum ?
-                calculatePreview(spaceNum) :
-                {}
+    const layPiece = (spaceNum = null, overrides = {}) => {
+        const thisPreview = overrides.preview ?
+            overrides.preview :
+                preview.spaces ? 
+                    preview : 
+                        spaceNum ?
+                            calculatePreview(spaceNum) :
+                                {}
         if (thisPreview.color) {
-            if (activePiece === justActioned && !force) return "SKIPPED"
+            if (activePiece === justActioned && !overrides.force) return "SKIPPED"
 
             setJustActioned(activePiece);
             setTimeout(() => {
@@ -343,8 +345,17 @@ const GameProvider = ({children, debug = false}) => {
                 // Clicking elsewhere, but piece is in valid place
                 layPiece(spaceNum)
             } else {
-                // Clicking elsewhere and piece is invalid
-                setPreview({})
+                // Clicking elsewhere and piece *was* invalid
+
+                // Move the preview to the new click position
+                const newPreview = calculatePreview(spaceNum)
+                if (newPreview && newPreview.color) {
+                    // If it fits, lay it
+                    layPiece(spaceNum, {preview: newPreview})
+                } else {
+                    // If not, remove it
+                    setPreview({})
+                }
             }
         } else {
             // Handle the end of a "click"
@@ -364,12 +375,17 @@ const GameProvider = ({children, debug = false}) => {
                         })
                     } else {
                         // Non turnable piece, force it back down
-                        layPiece(spaceNum, true)
+                        layPiece(spaceNum, {force: true})
                     }
                 }
+            } else if (touchSpace || spaceNum) {
+                // Two cases
+                // Either tried to "click" a piece from the tray into the board
+                // Or dragged a piece from the board off
+                if (isPreview) setDislodged(true)
+                else setPreview({})
             } else {
-                // "Click" into invalid spot
-                setDislodged(true)
+                setPreview({})
             }
         }
     }

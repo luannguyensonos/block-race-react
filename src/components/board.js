@@ -95,6 +95,9 @@ const Board = ({ className }) => {
                                         // Dragged into invalid spot
                                         setDislodged(true)
                                 } else {
+                                    // Two cases:
+                                    // 1) Either you clicked onto the board
+                                    // 2) You dragged off the board completely
                                     handleClickEnding(isPreview, spaceNum)
                                 }
                             }}
