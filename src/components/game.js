@@ -393,13 +393,8 @@ const GameProvider = ({children, debug = false}) => {
             } else if (touchSpace || spaceNum) {
                 // Two cases
                 // 1) Either tried to "click" a piece from the tray into the board,
-                //    in which case we should pace it onto the board in a dislodged state
                 // 2) Or dragged a piece from the board off,
-                //    in which case we should just remove it
-                if (isPreview) setDislodged(activePiece)
-                else {
-                    setPreview({})
-                }
+                setPreview({})
             } else {
                 setPreview({})
             }
