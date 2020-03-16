@@ -365,19 +365,30 @@ const H2HHeader = (id) => {
             <h1
               style={{
                 margin: `0.5rem 0`,
-                fontSize: `1rem`
+                fontSize: `0.9rem`
               }}
             >
               { challengeState < 3 ? 
-                `Important! Send to a friend or enemy:` : 
-                `Player ${trueChallenge.player1time < trueChallenge.player2time ? "1" : "2"} prevailed!` }
+                (
+                  <span>
+                    Important! Send to a friend or enemy:
+                    <br/>
+                    (Goes to open challenges in 3 hours)
+                  </span>
+                ) : 
+                (
+                  <span>
+                    {`Player ${trueChallenge.player1time < trueChallenge.player2time ? "1" : "2"} prevailed!`}
+                  </span>
+                )
+              }
             </h1>
             {challengeState < 3 ? 
               (
                 <h1
                   style={{
                     margin: `auto 0`,
-                    fontSize: `0.7rem`
+                    fontSize: `0.6rem`
                   }}
                 >
                   <Link

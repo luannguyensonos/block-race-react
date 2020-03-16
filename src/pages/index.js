@@ -19,6 +19,9 @@ export const formatSeconds = (secs) => {
   }
 }
 
+const RECENT_LEN = 9;
+const RECENT_SCORE_CUT = 30;
+
 const IndexPage = () => {
 
   const [recent, setRecent] = useState([]);
@@ -29,8 +32,10 @@ const IndexPage = () => {
     let recordsLeft = thisRecord.length;
     const usedNames = {};
     const reduce = thisRecord.reduce((obj, r) => {
-      if ((obj.rArr.length < 10 && !usedNames[r.data.name] && r.data.best >= 30) ||
-        recordsLeft <= 10-obj.rArr.length)
+      if ((obj.rArr.length < RECENT_LEN &&
+          !usedNames[r.data.name] &&
+          r.data.best >= RECENT_SCORE_CUT) ||
+          recordsLeft <= RECENT_LEN-obj.rArr.length)
       {
         usedNames[r.data.name] = true;
         obj.rArr.push(r.data);
@@ -52,7 +57,7 @@ const IndexPage = () => {
     sortable.sort(function(a, b) {
         return b[1] - a[1];
     });
-    setMost(sortable.slice(0,5));
+    setMost(sortable.slice(0,6));
 
     return thisRecord
   }, [])
@@ -63,7 +68,9 @@ const IndexPage = () => {
       .then(res => res.json())
 
     const reduce = thisRecord.reduce((obj, r) => {
-      if (r.data.player1time < 999 && r.data.player2.length > 0) {
+      if (r.data.player1time < 999 &&
+          r.data.player2.length > 0 &&
+          r.data.player1 !== r.data.player2) {
         if (!obj[r.data.player1]) obj[r.data.player1] = {w:0, l:0, t:0};
         if (!obj[r.data.player2]) obj[r.data.player2] = {w:0, l:0, t:0};
 
@@ -196,6 +203,18 @@ const IndexPage = () => {
                             <span>{`${r[1]}-${r[2]}${r[3] > 0 ? `-${r[3]}` : ""}`}</span>
                           </li>
                         ))}
+                        <li
+                          key={`open`}
+                          style={{
+                            display: `grid`,
+                            gridTemplateColumns: `1fr`,
+                            fontSize: `0.85rem`
+                          }}
+                        >
+                          <Link to={`/open`}>
+                            {`View open challenges`}
+                          </Link>
+                        </li>
                       </ul>
                     ) : "Wow, such empty :("
                 }
