@@ -6,7 +6,6 @@ import { formatSeconds } from "../pages/index"
 import PacmanLoader from "react-spinners/PacmanLoader"
 import { 
   GameContext,
-	generateBlockers,
 	serializedBlockers,
 } from "../components/game"
 
@@ -18,7 +17,8 @@ const H2HHeader = (id) => {
     puzzleId,
     setDone,
     setPuzzleId,
-    spaces
+    spaces,
+    generateBlockers
   } = useContext(GameContext);
 
   const [title, setTitle] = useState("");

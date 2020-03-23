@@ -53,6 +53,59 @@ export const initialPieceStates = {
       orientation: 0,
       maxOrientation: 1
     }
+}
+
+export const initialKPieceStates = {
+    "fourk": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 2
+    },
+    "threeka": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 2
+    },
+    "threekb": {
+        placed: false,
+        orientation: 0,
+        maxOrientation: 2
+    },
+    "twoka": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 2
+    },
+    "twokb": {
+        placed: false,
+        orientation: 0,
+        maxOrientation: 2
+    },
+    "onek": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 1
+    },
+    "cornerk": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 4
+    },
+    "lk": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 8
+    },
+    "nubk": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 4
+    },
+    "zigk": {
+      placed: false,
+      orientation: 0,
+      maxOrientation: 4
+    }
 } 
 
 export const pieceColors = {
@@ -64,11 +117,18 @@ export const pieceColors = {
     "l": "#45C8EE",
     "nub": "gold",
     "zig": "#EC332E",
-    "box": "#38E235"
-}
-
-const isTurnable = (piece) => {
-    return initialPieceStates[piece].maxOrientation > 1
+    "box": "#38E235",
+    // Kids pieces
+    "fourk": "#EC332E",
+    "threeka": "#3DADDE",
+    "threekb": "#EE1DD1",
+    "twoka": "#1D9200",
+    "twokb": "#53EA02",
+    "onek": "#EE691D",
+    "cornerk": "#EE8F1D",
+    "lk": "#1374AB",
+    "nubk": "#FFF000",
+    "zigk": "#33CB0E",
 }
 
 const Piece = ({ name, className }) => {
@@ -86,8 +146,16 @@ const Piece = ({ name, className }) => {
         dislodged,
         setDislodged,
         handleClickEnding,
-        calculatePreview
+        calculatePreview,
+        isKids
     } = useContext(GameContext)
+
+
+    const isTurnable = (piece) => {
+        return isKids ?
+            initialKPieceStates[piece].maxOrientation > 1 :
+            initialPieceStates[piece].maxOrientation > 1
+    }
 
     const [justSet, setJustSet] = useState(null)
     const setOrTurn = ({set, turn}) => {
@@ -126,7 +194,7 @@ const Piece = ({ name, className }) => {
             style={{
                 position: `relative`
             }}
-            className={className}
+            className={`${className} ${isKids ? "kids" : ""}`}
         >
             <div
                 id={name}
@@ -241,7 +309,9 @@ const StyledPiece = styled(Piece)`
         }
     
         &.l,
-        &.zig {
+        &.lk,
+        &.zig,
+        &.zigk {
             &.ori2 {
                 transform: rotate(90deg);
             }
@@ -274,10 +344,24 @@ const StyledPiece = styled(Piece)`
         .one22 {
             background: ${pieceColors.one};
         }
+
+        .onek22 {
+            background: ${pieceColors.onek};
+        }
     
         .two22,
         .two23 {
             background: ${pieceColors.two};
+        }
+
+        .twoka22,
+        .twoka23 {
+            background: ${pieceColors.twoka};
+        }
+
+        .twokb22,
+        .twokb23 {
+            background: ${pieceColors.twokb};
         }
     
         .three22,
@@ -285,11 +369,29 @@ const StyledPiece = styled(Piece)`
         .three24 {
             background: ${pieceColors.three};
         }
+
+        .threeka22,
+        .threeka23,
+        .threeka24 {
+            background: ${pieceColors.threeka};
+        }
+
+        .threekb22,
+        .threekb23,
+        .threekb24 {
+            background: ${pieceColors.threekb};
+        }
     
         .corner23,
         .corner32,
         .corner33 {
             background: ${pieceColors.corner};
+        }
+
+        .cornerk23,
+        .cornerk32,
+        .cornerk33 {
+            background: ${pieceColors.cornerk};
         }
     
         .l13,
@@ -298,6 +400,13 @@ const StyledPiece = styled(Piece)`
         .l33 {
             background: ${pieceColors.l};
         }
+
+        .lk13,
+        .lk23,
+        .lk32,
+        .lk33 {
+            background: ${pieceColors.lk};
+        }
     
         .nub22,
         .nub31,
@@ -305,12 +414,26 @@ const StyledPiece = styled(Piece)`
         .nub33 {
             background: ${pieceColors.nub};
         }
+
+        .nubk22,
+        .nubk31,
+        .nubk32,
+        .nubk33 {
+            background: ${pieceColors.nubk};
+        }
     
         .zig31,
         .zig32,
         .zig22,
         .zig23 {
             background: ${pieceColors.zig};
+        }
+
+        .zigk31,
+        .zigk32,
+        .zigk22,
+        .zigk23 {
+            background: ${pieceColors.zigk};
         }
     
         .box22,
@@ -326,6 +449,12 @@ const StyledPiece = styled(Piece)`
         .four24 {
             background: ${pieceColors.four};
         }
+        .fourk21,
+        .fourk22,
+        .fourk23,
+        .fourk24 {
+            background: ${pieceColors.fourk};
+        }
     
         .four22,
         .three23,
@@ -334,6 +463,15 @@ const StyledPiece = styled(Piece)`
         .l33,
         .nub32,
         .zig32,
+        .fourk22,
+        .threeka23,
+        .threekb23,
+        .twoka22,
+        .twokb22,
+        .cornerk33,
+        .lk33,
+        .nubk32,
+        .zigk32,
         .box22 {
             border-radius: 50%;
         }
@@ -367,10 +505,45 @@ const StyledPiece = styled(Piece)`
             .four21,
             .four22,
             .four23,
-            .four24 {
+            .four24,
+            .onek22,
+            .twoka22,
+            .twoka23,
+            .twokb22,
+            .twokb23,
+            .threeka22,
+            .threeka23,
+            .threeka24,
+            .threekb22,
+            .threekb23,
+            .threekb24,
+            .cornerk23,
+            .cornerk32,
+            .cornerk33,
+            .lk13,
+            .lk23,
+            .lk32,
+            .lk33,
+            .nubk22,
+            .nubk31,
+            .nubk32,
+            .nubk33,
+            .zigk31,
+            .zigk32,
+            .zigk22,
+            .zigk23,
+            .fourk21,
+            .fourk22,
+            .fourk23,
+            .fourk24 {
                 background: #232323;
             }
         }
+    }
+
+    &.kids > div.piece {
+        height: 4rem;
+        width: 4rem;
     }
 `
 

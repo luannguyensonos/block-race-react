@@ -6,7 +6,6 @@ import PacmanLoader from "react-spinners/PacmanLoader"
 import { formatSeconds } from "../pages/index"
 import { 
   GameContext,
-	generateBlockers,
 	serializedBlockers,
 	loadBlockersFromString
 } from "../components/game"
@@ -21,7 +20,9 @@ const PuzzleHeader = (id) => {
     setDone,
     setPuzzleId,
     spaces,
-    debugMsg
+    debugMsg,
+    isKids,
+    generateBlockers
   } = useContext(GameContext);
 
   const [title, setTitle] = useState("");
@@ -88,7 +89,7 @@ const PuzzleHeader = (id) => {
         setTitle(`${doneTime ? "Completed in " : ""}${formattedTime}`);
       }, 1000)
     }
-    if (doneTime && doneSeconds) {
+    if (doneTime && doneSeconds && !isKids) {
       if ((!retrievedRecord.value || record <= 0) && !(retrievedRecord.loading || retrievedRecord.error)) {
         retrieveRecord(puzzleId);
       }
@@ -136,7 +137,7 @@ const PuzzleHeader = (id) => {
             }}
           >
             {`${timer == null ? 
-                "Puzzle Mode" : 
+                `${isKids ? "Kids" : "Puzzle"} Mode` :
                 id.id === "debug" ? 
                   debugMsg : 
                   title}`}
@@ -157,7 +158,7 @@ const PuzzleHeader = (id) => {
           </RightButton>
         ) : null}
       </div>
-      {!timer && !doneTime && puzzleId ?
+      {!isKids && !timer && !doneTime && puzzleId ?
         (
           <div
             style={{
@@ -196,7 +197,7 @@ const PuzzleHeader = (id) => {
           </div>
         ) : null
       }
-      {timer && doneTime && doneSeconds && puzzleId && record > 0 ?
+      {!isKids && timer && doneTime && doneSeconds && puzzleId && record > 0 ?
         (
           <div
             style={{
@@ -287,7 +288,7 @@ const PuzzleHeader = (id) => {
             <PacmanLoader color="white" size={10}/>
           </div>
         )
-        : !timer && puzzleId && local.includes(puzzleId) ?
+        : !isKids && !timer && puzzleId && local.includes(puzzleId) ?
         (
           <div
             style={{

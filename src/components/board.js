@@ -1,6 +1,6 @@
 import React, {useContext} from "react"
 import styled from "styled-components"
-import { GameContext, RANGE } from "../components/game"
+import { GameContext, RANGE, kRANGEX, kRANGEY } from "../components/game"
 import { pieceColors } from "../components/piece"
 import { isMobile, isBrowser } from "react-device-detect"
 
@@ -16,7 +16,8 @@ const Board = ({ className }) => {
         setTouchSpace,
         dislodged,
         setDislodged,
-        handleClickEnding
+        handleClickEnding,
+        isKids
     } = useContext(GameContext);
 
     const isPiece = (number) => {
@@ -24,9 +25,12 @@ const Board = ({ className }) => {
         return spaces[number] !== "FREE" && spaces[number] !== "BLOCK"
     }
 
+    const iRange = isKids ? kRANGEY : RANGE;
+    const jRange = isKids ? kRANGEX : RANGE;
+
     return (
         <div 
-            className={className}
+            className={`${className} ${isKids ? "kids" : ""}`}
             onMouseLeave={() => {
                 if (isMobile) return;
                 if (dislodged) {
@@ -34,9 +38,9 @@ const Board = ({ className }) => {
                 }
             }}
         >
-            {RANGE.map(i => {
+            {iRange.map(i => {
                 const squares = [];
-                RANGE.forEach(j => {
+                jRange.forEach(j => {
                     const spaceNum = Number.parseInt(`${i}${j}`);
                     const isPreview = preview.spaces && preview.spaces.includes(spaceNum);
                     squares.push(
@@ -120,6 +124,25 @@ const StyledBoard = styled(Board)`
     padding: 0.5rem;
     touch-action: none;
 
+    &.kids {
+        grid-template-columns: repeat(3, 1fr);
+        background: sandybrown;
+        padding: 0.5rem;
+
+        & > div {
+            background: #ffdd99;
+            border: 1px solid #ffdd99;
+            max-height: unset;
+            width: calc((50vw) / 4);
+            height: calc((50vw) / 4);
+
+            &.BLOCK {
+                background: #000;
+                border-radius: 0;
+            }
+        }
+    }
+
     & > div {
         background: #000;
         border: 1px solid #333;
@@ -192,7 +215,74 @@ const StyledBoard = styled(Board)`
             box-shadow: 0px 0px 0.2rem 0.2rem red;
             cursor: not-allowed;
         }
+    }
 
+    &.kids {
+        & > div {
+            border-radius: 0;
+
+            &.BLOCK {
+                background: #000;
+                border-radius: 0;
+            }
+            &.FREE {
+                background: #ffdd99;
+            }
+
+            &.fourk {
+                background: ${pieceColors.fourk};
+            }
+
+            &.threeka {
+                background: ${pieceColors.threeka};
+            }
+            &.threekb {
+                background: ${pieceColors.threekb};
+            }
+
+            &.twoka {
+                background: ${pieceColors.twoka};
+            }
+            &.twokb {
+                background: ${pieceColors.twokb};
+            }
+
+            &.onek {
+                background: ${pieceColors.onek};
+            }
+
+            &.cornerk {
+                background: ${pieceColors.cornerk};
+            }
+
+            &.lk {
+                background: ${pieceColors.lk};
+            }
+
+            &.nubk {
+                background: ${pieceColors.nubk};
+            }
+
+            &.zigk {
+                background: ${pieceColors.zigk};
+            }
+
+            &.ispreview {
+                opacity: .7;
+                border-radius: 25%;
+                box-shadow: 0px 0px 0.2rem 0.2rem #444;
+            }
+
+            &.false {
+                background: #4A0000;
+            }
+
+            &.false,
+            &.falseGlow {
+                box-shadow: 0px 0px 0.2rem 0.2rem red;
+                cursor: not-allowed;
+            }
+        }
     }
 `
 

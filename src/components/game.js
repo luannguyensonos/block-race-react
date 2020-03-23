@@ -1,5 +1,5 @@
 import React, { useReducer, useState } from "react"
-import { initialPieceStates } from "../components/piece"
+import { initialPieceStates, initialKPieceStates } from "../components/piece"
 
 export const GameContext = React.createContext({
     resetBoard: () => {},
@@ -18,6 +18,7 @@ export const GameContext = React.createContext({
     setTouchSpace: (str) => {},
     setDislodged: (str) => {},
     handleClickEnding: (bool, int) => {},
+    generateBlockers: () => {},
     spaces: {},
     pieces: {},
     activePiece: "",
@@ -27,10 +28,13 @@ export const GameContext = React.createContext({
     puzzleId: null,
     debugMsg: "",
     touchSpace: null,
-    dislodged: false
+    dislodged: false,
+    isKids: false
   })
   
 export const RANGE = [1,2,3,4,5,6];
+export const kRANGEY = [1,2,3,4,5,6,7,8,9,10,11];
+export const kRANGEX = [1,2,3];
 const DICE = [
     [11,31,41,42,52,63],
     [12,13,21,22,23,32],
@@ -93,18 +97,6 @@ const spaceReducer = (state, action) => {
     }
 }
 
-const pieceReducer = (state, action) => {
-    switch (action.type) {
-        case "RESET":
-        return initialPieceStates
-        default:
-        return {
-            ...state,
-            ...action.item
-        }
-    }
-}
-
 export const serializedBlockers = (bArr) => {
     return bArr.sort().reduce((str, b) => {
         return str + b;
@@ -112,24 +104,44 @@ export const serializedBlockers = (bArr) => {
 }
 
 export const loadBlockersFromString = (preset) => {
-    return [0,2,4,6,8,10,12].reduce((arr, i) => {
-        arr.push(Number.parseInt(preset.substr(i,2)));
-        return arr;
-    }, [])
+    return preset.length === 14 ?
+        [0,2,4,6,8,10,12].reduce((arr, i) => {
+            arr.push(Number.parseInt(preset.substr(i,2)));
+            return arr;
+        }, []) :
+        // Fuck it, just generate from scratch
+        getKidBlockers()
 }
 
 const diceIndex = () => { return Math.floor(Math.random() * 6) }; // 0 to 5
-export const generateBlockers = () => {
-    return DICE.reduce((arr, d) => {
-        arr.push(d[diceIndex()]);
-        return arr;
-    }, []);
+const getKidBlockers = () => {
+    const row = Math.floor(Math.random() * 11) + 1
+    const coinFlip = Math.random() > 0.5
+    if (row === 1 || row === 11 || coinFlip)
+        return [`${row}1`, `${row}2`, `${row}3`]
+    else
+        return [`${row-1}2`, `${row}2`, `${row+1}2`]
 }
 
-const GameProvider = ({children, debug = false}) => {
+const GameProvider = ({children, debug = false, mode = null}) => {
+    const [isKids, setKids] = useState(mode && mode === "kids");
+    const initialPieces = isKids ? initialKPieceStates : initialPieceStates
+
+    const pieceReducer = (state, action) => {
+        switch (action.type) {
+            case "RESET":
+            return initialPieces
+            default:
+            return {
+                ...state,
+                ...action.item
+            }
+        }
+    }
+
     const [spaces, setSpaces] = useReducer(spaceReducer, {});
-    const [pieces, setPieces] = useReducer(pieceReducer, initialPieceStates);
-    const [activePiece, setActivePiece] = useState(Object.keys(initialPieceStates)[0]);
+    const [pieces, setPieces] = useReducer(pieceReducer, initialPieces);
+    const [activePiece, setActivePiece] = useState(Object.keys(initialPieces)[0]);
     const [timer, setTimer] = useState(null);
     const [doneTime, setDone] = useState(null);
     const [puzzleId, setPuzzleId] = useState("");
@@ -137,13 +149,22 @@ const GameProvider = ({children, debug = false}) => {
     const [debugMsg, setDebugMsg] = useState("");
     const [clientRect, setClientRect] = useState(null);
     const [touchSpace, setTouchSpace] = useState(null);
-    const [dislodged, setDislodged] = useState(null)
+    const [dislodged, setDislodged] = useState(null);
     const [preview, setPreview] = useReducer((prev, curr) => {
         if (Object.keys(curr).length === 0 && curr.constructor === Object) {
             setDislodged(null)
         }
         return curr
     }, {});
+
+    const generateBlockers = () => {
+        return isKids ?
+            getKidBlockers() :
+            DICE.reduce((arr, d) => {
+                arr.push(d[diceIndex()]);
+                return arr;
+            }, []);
+    }
 
     const resetBoard = () => {
         const blockers = generateBlockers();
@@ -152,17 +173,20 @@ const GameProvider = ({children, debug = false}) => {
         setPieces({ type: "RESET" });
         setTimer(null);
         setDone(null);
-        setActivePiece(Object.keys(initialPieceStates)[0]);
+        setActivePiece(Object.keys(initialPieces)[0]);
         setPreview({});
         setDislodged(null);
     }
   
     const startGame = () => {
       const blockers = loadBlockersFromString(puzzleId);
-      RANGE.forEach(i => {
-        RANGE.forEach(j => {
+      const iRange = isKids ? kRANGEY : RANGE;
+      const jRange = isKids ? kRANGEX : RANGE;
+
+      iRange.forEach(i => {
+        jRange.forEach(j => {
             const thisSpace = Number.parseInt(`${i}${j}`);
-            const status = blockers.includes(thisSpace) ? "BLOCK" : "FREE";
+            const status = blockers.includes(thisSpace) || blockers.includes(`${i}${j}`) ? "BLOCK" : "FREE";
             setSpaces({ item: { [thisSpace] : status} })
         })
       })
@@ -177,20 +201,25 @@ const GameProvider = ({children, debug = false}) => {
         const ap = overrides.activePiece || activePiece;
         const thisPiece = overrides.piece || pieces[ap];
         const ori = thisPiece.orientation;
-        let spots = moves[ap+ori](spaceNum);
+        const map = isKids ? ap.replace(/k[a|b]?/, "") : ap;
+        let spots = moves[map+ori](spaceNum);
 
         // Logic here to bump the preview back into the board
         const adjs = spots.reduce((obj, s) => {
             const fst = Math.floor(s/10);
             const snd = s % 10;
+            const borders = {
+                bottom: isKids ? 11 : 6,
+                right: isKids ? 3 : 6
+            }
             if (fst === 0) obj.top = Math.max(1, obj.top)
             if (fst === -1) obj.top = Math.max(2, obj.top)
-            if (fst === 7) obj.bottom = Math.max(1, obj.bottom)
-            if (fst === 8) obj.bottom = Math.max(2, obj.bottom)
+            if (fst === borders.bottom+1) obj.bottom = Math.max(1, obj.bottom)
+            if (fst === borders.bottom+2) obj.bottom = Math.max(2, obj.bottom)
             if (snd === 0) obj.left = Math.max(1, obj.left)
             if (snd === 9) obj.left = Math.max(2, obj.left)
-            if (snd === 7) obj.right = Math.max(1, obj.right)
-            if (snd === 8) obj.right = Math.max(2, obj.right)
+            if (snd === borders.right+1) obj.right = Math.max(1, obj.right)
+            if (snd === borders.right+2) obj.right = Math.max(2, obj.right)
             return obj
         }, {
             top: 0,
@@ -205,7 +234,7 @@ const GameProvider = ({children, debug = false}) => {
             (adjs.right*-1);
 
         if (proposedSpace !== spaceNum) {
-            spots = moves[ap+ori](proposedSpace)
+            spots = moves[map+ori](proposedSpace)
         }
         const thisPreview = {
             color: 
@@ -428,7 +457,9 @@ const GameProvider = ({children, debug = false}) => {
             setTouchSpace,
             dislodged,
             setDislodged,
-            handleClickEnding
+            handleClickEnding,
+            isKids,
+            generateBlockers
         }}>
             <div
                 onTouchMove={(e) => {

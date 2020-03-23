@@ -7,10 +7,10 @@ const Tray = ({ className }) => {
 
     return (
         <GameContext.Consumer>
-            {({pieces, timer, doneTime}) =>
+            {({pieces, timer, doneTime, isKids}) =>
                 (
-                    <div className={className}>
-                        {pieces && timer && !doneTime ? Object.keys(pieces).map(i => (
+                    <div className={`${className} ${isKids ? "kids" : ""}`}>
+                        {pieces && (timer || isKids) && !doneTime ? Object.keys(pieces).map(i => (
                             <Piece key={i} name={i}/>
                         )) : null}            
                     </div>
@@ -27,6 +27,14 @@ const StyledTray = styled(Tray)`
     height: calc(100vw - 8rem);
     max-height: 375px;
     touch-action: none;
+
+    &.kids {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 4rem 0 0 1.5rem;
+        height: 30rem;
+        max-height: 30rem;
+        width: 50vw
+    }
 `
 
 export default StyledTray
