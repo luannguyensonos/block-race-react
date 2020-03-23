@@ -126,12 +126,12 @@ const StyledBoard = styled(Board)`
 
     &.kids {
         grid-template-columns: repeat(3, 1fr);
-        background: sandybrown;
+        background: #BFB373;
         padding: 0.5rem;
 
         & > div {
-            background: #ffdd99;
-            border: 1px solid #ffdd99;
+            background: #E5D789;
+            border: 1px solid #E5D789;
             max-height: unset;
             width: calc((50vw) / 4);
             height: calc((50vw) / 4);
@@ -226,7 +226,7 @@ const StyledBoard = styled(Board)`
                 border-radius: 0;
             }
             &.FREE {
-                background: #ffdd99;
+                background: #E5D789;
             }
 
             &.fourk {
