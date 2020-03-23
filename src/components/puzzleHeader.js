@@ -129,24 +129,31 @@ const PuzzleHeader = (id) => {
             fontSize: `1rem`
           }}
         >
-          <Link
-            to="/"
-            style={{
-              color: `white`,
-              textDecoration: `none`,
-            }}
-          >
-            {`${timer == null ? 
-                `${isKids ? "Kids" : "Puzzle"} Mode` :
-                id.id === "debug" ? 
-                  debugMsg : 
-                  title}`}
-          </Link>
+          {
+            isKids ?
+              `${timer == null ? 
+                `Kids Mode` : 
+                title}`
+              :
+              <Link
+                to="/"
+                style={{
+                  color: `white`,
+                  textDecoration: `none`,
+                }}
+              >
+                {`${timer == null ? 
+                    `Puzzle Mode` :
+                    id.id === "debug" ? 
+                      debugMsg : 
+                      title}`}
+              </Link>
+            }
         </h1>
         {puzzleId ? (
           <RightButton
             onClick={() => {
-              if (timer == null && !local.includes(puzzleId)) {
+              if (timer == null && (!local.includes(puzzleId) || isKids)) {
                 startGame()
               } else {
                 resetBoard()
@@ -154,7 +161,7 @@ const PuzzleHeader = (id) => {
               }
             }}
           >
-            {`${timer == null && !local.includes(puzzleId) ? "Start" : "Reset"}`}
+            {`${timer == null && (!local.includes(puzzleId) || isKids) ? "Start" : "Reset"}`}
           </RightButton>
         ) : null}
       </div>
