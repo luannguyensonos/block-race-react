@@ -58,8 +58,8 @@ export const initialPieceStates = {
 export const initialKPieceStates = {
     "fourk": {
       placed: false,
-      orientation: 0,
-      maxOrientation: 2
+      orientation: 1,
+      maxOrientation: 1
     },
     "threeka": {
       placed: false,
@@ -68,7 +68,7 @@ export const initialKPieceStates = {
     },
     "threekb": {
         placed: false,
-        orientation: 0,
+        orientation: 1,
         maxOrientation: 2
     },
     "twoka": {
@@ -78,7 +78,7 @@ export const initialKPieceStates = {
     },
     "twokb": {
         placed: false,
-        orientation: 0,
+        orientation: 1,
         maxOrientation: 2
     },
     "onek": {
@@ -103,7 +103,7 @@ export const initialKPieceStates = {
     },
     "zigk": {
       placed: false,
-      orientation: 0,
+      orientation: 2,
       maxOrientation: 4
     }
 } 
