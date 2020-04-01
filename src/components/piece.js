@@ -184,7 +184,7 @@ const Piece = ({ name, className }) => {
             setJustSet(name);
             setTimeout(() => {
                 setJustSet(null);
-            }, 100);
+            }, 200);
             setActivePiece(name)
         }
     }
