@@ -16,7 +16,7 @@
     "gatsby-plugin-sharp": "^2.4.3",
     "gatsby-source-filesystem": "^2.1.46",
     "gatsby-transformer-sharp": "^2.3.13",
-    "minimist": "^1.2.2",
+    "minimist": "^1.2.6",
     "netlify-lambda": "^1.6.3",
     "npm-run-all": "^4.1.5",
     "path": "^0.12.7",
